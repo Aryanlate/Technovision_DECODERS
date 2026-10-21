@@ -66,3 +66,12 @@ All LLM keys and agent code stay in the backend only. The frontend also runs the
 ## Feature Flags & Rules
 - **Feature Flags:** Every optional feature from Parts 16 to 22 sits behind a flag in `/lib/flags.ts` so unfinished features can be switched off for the demo.
 - **Code Rules:** Keep files small and typed, one responsibility per file, add short comments, no hard-coded secrets, handle empty and wrong input with clear messages.
+
+
+Offline-first evidence model (added):
+The app is offline-first. A local evidence store (IndexedDB in /frontend) and a server evidence store (Supabase Postgres through /backend) hold every fact about the student and about opportunities as versioned, append-only evidence records. The backend may be unavailable at any time; evaluation never depends on it.
+Every record has: stable evidenceId, version, origin (student_confirmed | user_provided | ai_generated | system_import), trust (verified | needs_review | unverified), source, timestamps, optional validUntil, and status.
+Eligibility is never stored as a verdict. It is recomputed from the current evidence whenever evidence changes, and every finding lists the evidence ids and versions that support it, or why evidence was excluded.
+Unverified, stale, conflicting or unconfirmed AI evidence is advisory only and never counts as a confirmed fact.
+Sync never overwrites student_confirmed evidence with ai_generated evidence. Conflicts keep both versions.
+The original workflow (profile, paste, checklist, result: 3 Match, 1 Mismatch, 2 Missing info) must keep working, online and offline.
