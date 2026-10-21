@@ -1,0 +1,13 @@
+[AGENT_AUDIT 2026-10-18T03:12:46.599Z] Agent=test_timeout | Provider=mock-timeout-p1 | Error=timeout | Duration=0ms | FallbackUsed=false | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:46.601Z] Agent=test_failall | Provider=mock-fail-1 | Error=provider_error | Duration=0ms | FallbackUsed=false | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:46.602Z] Agent=test_failall | Provider=mock-fail-2 | Error=429_rate_limit | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:46.618Z] Agent=github_analyzer | Provider=gemini | Error=all_providers_failed | Duration=1ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:46.622Z] Agent=linkedin_analyzer | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:46.715Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=1ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:46.718Z] Agent=research_agent | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:47.353Z] Agent=discovery_agent | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:47.356Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:47.358Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:47.359Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:47.366Z] Agent=test_failall | Provider=mock-fail-2 | Error=429_rate_limit | Duration=1ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-18T03:12:47.367Z] Agent=test_failall | Provider=mock-fail-1 | Error=all_providers_failed | Duration=766ms | FallbackUsed=true | Slow=false | Failed=true

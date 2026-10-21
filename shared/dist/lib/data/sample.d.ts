@@ -1,0 +1,724 @@
+import { StudentProfile, Checklist } from '../types/index.js';
+export declare const SAMPLE_OPPORTUNITY_TEXT = "2nd or 3rd-year B.Tech/B.E. student. CGPA 7.5 or above. Skills: HTML, CSS, JavaScript. Resume required. Portfolio or GitHub link required. Available for 8 weeks.";
+export declare const SAMPLE_OPPORTUNITY_TITLE = "Summer Engineering Intern (Benchmark PS-03)";
+export declare const SAMPLE_CHECKLIST: Checklist;
+export declare const SAMPLE_STUDENT_PROFILE: StudentProfile;
+export declare const EXPECTED_SAMPLE_RESULTS: {
+    requirementsCount: number;
+    statuses: {
+        year: string;
+        cgpa: string;
+        skills: string;
+        resume: string;
+        portfolioOrGithub: string;
+        availability: string;
+    };
+    summary: {
+        matches: number;
+        mismatches: number;
+        missingInfo: number;
+        overallVerdict: string;
+    };
+};
+export declare const SCHOLARSHIP_SAMPLE_TEXT = "Open to 2nd or 3rd-year B.Tech/B.E. engineering students with minimum 80% marks (or CGPA 8.0/10) in previous semesters. Family annual gross income must not exceed Rs 6,00,000 per annum. Marksheet, income certificate, and student resume required.";
+export declare const SCHOLARSHIP_SAMPLE_TITLE = "National Merit-cum-Means STEM Scholarship 2026";
+export declare const SCHOLARSHIP_CHECKLIST: Checklist;
+export declare const SCHOLARSHIP_STUDENT_PROFILE: StudentProfile;
+export declare const COMPETITION_SAMPLE_TEXT = "National competition for college students to build AI or IoT campus solutions. Team size must be between 2 to 4 members. Each team must submit a public GitHub repository link. Minimum 1 verified software or hardware project required. Final project submission deadline: November 15, 2026.";
+export declare const COMPETITION_SAMPLE_TITLE = "Smart Campus National Innovation Hackathon 2026";
+export declare const COMPETITION_CHECKLIST: Checklist;
+export declare const COMPETITION_STUDENT_PROFILE: StudentProfile;
+export declare const IOT_INTERNSHIP_SAMPLE_TEXT = "12-week summer engineering internship for electronics or computer science students. Must have completed at least 1 verified IoT or Embedded Systems project with public code or demo proof. Active LinkedIn profile link required. Technical skills: Embedded C, Arduino, ESP32, MQTT, Sensors. Available for 12 weeks.";
+export declare const IOT_INTERNSHIP_SAMPLE_TITLE = "IoT & Embedded Systems Engineering Intern";
+export declare const IOT_INTERNSHIP_CHECKLIST: Checklist;
+export declare const IOT_STUDENT_PROFILE: StudentProfile;
+export declare const SAMPLE_OPPORTUNITIES: {
+    title: string;
+    text: string;
+    checklist: {
+        title: string;
+        opportunityType: string;
+        requirements: {
+            id: string;
+            kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            label: string;
+            required: boolean;
+            value?: any;
+            title?: string | undefined;
+            sourceSentence?: string | undefined;
+            category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
+            rule?: string | undefined;
+            parsedRule?: {
+                allowedYears?: number[] | undefined;
+                degreeKeywords?: string[] | undefined;
+                minCgpa?: number | undefined;
+                maxCgpa?: number | undefined;
+                requiredSkills?: string[] | undefined;
+                preferredSkills?: string[] | undefined;
+                resumeRequired?: boolean | undefined;
+                githubOrPortfolioRequired?: boolean | undefined;
+                githubRequired?: boolean | undefined;
+                portfolioRequired?: boolean | undefined;
+                minAvailabilityWeeks?: number | undefined;
+            } | undefined;
+            importance?: "mandatory" | "preferred" | undefined;
+        }[];
+        sources: string[];
+        warnings?: string[] | undefined;
+    };
+    profile: {
+        skills: string[];
+        documents: {
+            type: string;
+            name: string;
+            verified: boolean;
+            id?: string | undefined;
+            url?: string | undefined;
+            issuedDate?: string | undefined;
+        }[];
+        links: {
+            github: string;
+            linkedin: string;
+            instagram: string;
+            portfolio: string;
+        };
+        name: string;
+        branch: string;
+        projects: {
+            status: string;
+            id: string;
+            title: string;
+            domains: string[];
+            tech: string[];
+            role: string;
+            proofLink: string;
+            description?: string | undefined;
+            link?: string | undefined;
+            techStack?: string[] | undefined;
+        }[];
+        id?: string | undefined;
+        year?: number | null | undefined;
+        cgpa?: number | null | undefined;
+        availabilityWeeks?: number | null | undefined;
+        plan?: "free" | "premium" | "college" | undefined;
+        monthlyChecksUsed?: number | undefined;
+        monthlyChecksLimit?: number | undefined;
+        yearOfStudy?: number | undefined;
+        degree?: string | undefined;
+        hasResume?: boolean | null | undefined;
+        resumeUrl?: string | undefined;
+        githubUrl?: string | undefined;
+        portfolioUrl?: string | undefined;
+        linkedInText?: string | undefined;
+    };
+    category: string;
+}[];
+export declare const ADDITIONAL_SAMPLES: {
+    title: string;
+    text: string;
+    checklist: {
+        title: string;
+        opportunityType: string;
+        requirements: {
+            id: string;
+            kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            label: string;
+            required: boolean;
+            value?: any;
+            title?: string | undefined;
+            sourceSentence?: string | undefined;
+            category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
+            rule?: string | undefined;
+            parsedRule?: {
+                allowedYears?: number[] | undefined;
+                degreeKeywords?: string[] | undefined;
+                minCgpa?: number | undefined;
+                maxCgpa?: number | undefined;
+                requiredSkills?: string[] | undefined;
+                preferredSkills?: string[] | undefined;
+                resumeRequired?: boolean | undefined;
+                githubOrPortfolioRequired?: boolean | undefined;
+                githubRequired?: boolean | undefined;
+                portfolioRequired?: boolean | undefined;
+                minAvailabilityWeeks?: number | undefined;
+            } | undefined;
+            importance?: "mandatory" | "preferred" | undefined;
+        }[];
+        sources: string[];
+        warnings?: string[] | undefined;
+    };
+    profile: {
+        skills: string[];
+        documents: {
+            type: string;
+            name: string;
+            verified: boolean;
+            id?: string | undefined;
+            url?: string | undefined;
+            issuedDate?: string | undefined;
+        }[];
+        links: {
+            github: string;
+            linkedin: string;
+            instagram: string;
+            portfolio: string;
+        };
+        name: string;
+        branch: string;
+        projects: {
+            status: string;
+            id: string;
+            title: string;
+            domains: string[];
+            tech: string[];
+            role: string;
+            proofLink: string;
+            description?: string | undefined;
+            link?: string | undefined;
+            techStack?: string[] | undefined;
+        }[];
+        id?: string | undefined;
+        year?: number | null | undefined;
+        cgpa?: number | null | undefined;
+        availabilityWeeks?: number | null | undefined;
+        plan?: "free" | "premium" | "college" | undefined;
+        monthlyChecksUsed?: number | undefined;
+        monthlyChecksLimit?: number | undefined;
+        yearOfStudy?: number | undefined;
+        degree?: string | undefined;
+        hasResume?: boolean | null | undefined;
+        resumeUrl?: string | undefined;
+        githubUrl?: string | undefined;
+        portfolioUrl?: string | undefined;
+        linkedInText?: string | undefined;
+    };
+    category: string;
+}[];
+export declare const sampleOpportunityText = "2nd or 3rd-year B.Tech/B.E. student. CGPA 7.5 or above. Skills: HTML, CSS, JavaScript. Resume required. Portfolio or GitHub link required. Available for 8 weeks.";
+export declare const sampleProfile: {
+    skills: string[];
+    documents: {
+        type: string;
+        name: string;
+        verified: boolean;
+        id?: string | undefined;
+        url?: string | undefined;
+        issuedDate?: string | undefined;
+    }[];
+    links: {
+        github: string;
+        linkedin: string;
+        instagram: string;
+        portfolio: string;
+    };
+    name: string;
+    branch: string;
+    projects: {
+        status: string;
+        id: string;
+        title: string;
+        domains: string[];
+        tech: string[];
+        role: string;
+        proofLink: string;
+        description?: string | undefined;
+        link?: string | undefined;
+        techStack?: string[] | undefined;
+    }[];
+    id?: string | undefined;
+    year?: number | null | undefined;
+    cgpa?: number | null | undefined;
+    availabilityWeeks?: number | null | undefined;
+    plan?: "free" | "premium" | "college" | undefined;
+    monthlyChecksUsed?: number | undefined;
+    monthlyChecksLimit?: number | undefined;
+    yearOfStudy?: number | undefined;
+    degree?: string | undefined;
+    hasResume?: boolean | null | undefined;
+    resumeUrl?: string | undefined;
+    githubUrl?: string | undefined;
+    portfolioUrl?: string | undefined;
+    linkedInText?: string | undefined;
+};
+export declare const sampleStudentProfile: {
+    skills: string[];
+    documents: {
+        type: string;
+        name: string;
+        verified: boolean;
+        id?: string | undefined;
+        url?: string | undefined;
+        issuedDate?: string | undefined;
+    }[];
+    links: {
+        github: string;
+        linkedin: string;
+        instagram: string;
+        portfolio: string;
+    };
+    name: string;
+    branch: string;
+    projects: {
+        status: string;
+        id: string;
+        title: string;
+        domains: string[];
+        tech: string[];
+        role: string;
+        proofLink: string;
+        description?: string | undefined;
+        link?: string | undefined;
+        techStack?: string[] | undefined;
+    }[];
+    id?: string | undefined;
+    year?: number | null | undefined;
+    cgpa?: number | null | undefined;
+    availabilityWeeks?: number | null | undefined;
+    plan?: "free" | "premium" | "college" | undefined;
+    monthlyChecksUsed?: number | undefined;
+    monthlyChecksLimit?: number | undefined;
+    yearOfStudy?: number | undefined;
+    degree?: string | undefined;
+    hasResume?: boolean | null | undefined;
+    resumeUrl?: string | undefined;
+    githubUrl?: string | undefined;
+    portfolioUrl?: string | undefined;
+    linkedInText?: string | undefined;
+};
+export declare const sampleChecklist: {
+    title: string;
+    opportunityType: string;
+    requirements: {
+        id: string;
+        kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+        label: string;
+        required: boolean;
+        value?: any;
+        title?: string | undefined;
+        sourceSentence?: string | undefined;
+        category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
+        rule?: string | undefined;
+        parsedRule?: {
+            allowedYears?: number[] | undefined;
+            degreeKeywords?: string[] | undefined;
+            minCgpa?: number | undefined;
+            maxCgpa?: number | undefined;
+            requiredSkills?: string[] | undefined;
+            preferredSkills?: string[] | undefined;
+            resumeRequired?: boolean | undefined;
+            githubOrPortfolioRequired?: boolean | undefined;
+            githubRequired?: boolean | undefined;
+            portfolioRequired?: boolean | undefined;
+            minAvailabilityWeeks?: number | undefined;
+        } | undefined;
+        importance?: "mandatory" | "preferred" | undefined;
+    }[];
+    sources: string[];
+    warnings?: string[] | undefined;
+};
+export declare const scholarshipOpportunity: {
+    title: string;
+    text: string;
+    checklist: {
+        title: string;
+        opportunityType: string;
+        requirements: {
+            id: string;
+            kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            label: string;
+            required: boolean;
+            value?: any;
+            title?: string | undefined;
+            sourceSentence?: string | undefined;
+            category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
+            rule?: string | undefined;
+            parsedRule?: {
+                allowedYears?: number[] | undefined;
+                degreeKeywords?: string[] | undefined;
+                minCgpa?: number | undefined;
+                maxCgpa?: number | undefined;
+                requiredSkills?: string[] | undefined;
+                preferredSkills?: string[] | undefined;
+                resumeRequired?: boolean | undefined;
+                githubOrPortfolioRequired?: boolean | undefined;
+                githubRequired?: boolean | undefined;
+                portfolioRequired?: boolean | undefined;
+                minAvailabilityWeeks?: number | undefined;
+            } | undefined;
+            importance?: "mandatory" | "preferred" | undefined;
+        }[];
+        sources: string[];
+        warnings?: string[] | undefined;
+    };
+    profile: {
+        skills: string[];
+        documents: {
+            type: string;
+            name: string;
+            verified: boolean;
+            id?: string | undefined;
+            url?: string | undefined;
+            issuedDate?: string | undefined;
+        }[];
+        links: {
+            github: string;
+            linkedin: string;
+            instagram: string;
+            portfolio: string;
+        };
+        name: string;
+        branch: string;
+        projects: {
+            status: string;
+            id: string;
+            title: string;
+            domains: string[];
+            tech: string[];
+            role: string;
+            proofLink: string;
+            description?: string | undefined;
+            link?: string | undefined;
+            techStack?: string[] | undefined;
+        }[];
+        id?: string | undefined;
+        year?: number | null | undefined;
+        cgpa?: number | null | undefined;
+        availabilityWeeks?: number | null | undefined;
+        plan?: "free" | "premium" | "college" | undefined;
+        monthlyChecksUsed?: number | undefined;
+        monthlyChecksLimit?: number | undefined;
+        yearOfStudy?: number | undefined;
+        degree?: string | undefined;
+        hasResume?: boolean | null | undefined;
+        resumeUrl?: string | undefined;
+        githubUrl?: string | undefined;
+        portfolioUrl?: string | undefined;
+        linkedInText?: string | undefined;
+    };
+    category: string;
+};
+export declare const competitionOpportunity: {
+    title: string;
+    text: string;
+    checklist: {
+        title: string;
+        opportunityType: string;
+        requirements: {
+            id: string;
+            kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            label: string;
+            required: boolean;
+            value?: any;
+            title?: string | undefined;
+            sourceSentence?: string | undefined;
+            category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
+            rule?: string | undefined;
+            parsedRule?: {
+                allowedYears?: number[] | undefined;
+                degreeKeywords?: string[] | undefined;
+                minCgpa?: number | undefined;
+                maxCgpa?: number | undefined;
+                requiredSkills?: string[] | undefined;
+                preferredSkills?: string[] | undefined;
+                resumeRequired?: boolean | undefined;
+                githubOrPortfolioRequired?: boolean | undefined;
+                githubRequired?: boolean | undefined;
+                portfolioRequired?: boolean | undefined;
+                minAvailabilityWeeks?: number | undefined;
+            } | undefined;
+            importance?: "mandatory" | "preferred" | undefined;
+        }[];
+        sources: string[];
+        warnings?: string[] | undefined;
+    };
+    profile: {
+        skills: string[];
+        documents: {
+            type: string;
+            name: string;
+            verified: boolean;
+            id?: string | undefined;
+            url?: string | undefined;
+            issuedDate?: string | undefined;
+        }[];
+        links: {
+            github: string;
+            linkedin: string;
+            instagram: string;
+            portfolio: string;
+        };
+        name: string;
+        branch: string;
+        projects: {
+            status: string;
+            id: string;
+            title: string;
+            domains: string[];
+            tech: string[];
+            role: string;
+            proofLink: string;
+            description?: string | undefined;
+            link?: string | undefined;
+            techStack?: string[] | undefined;
+        }[];
+        id?: string | undefined;
+        year?: number | null | undefined;
+        cgpa?: number | null | undefined;
+        availabilityWeeks?: number | null | undefined;
+        plan?: "free" | "premium" | "college" | undefined;
+        monthlyChecksUsed?: number | undefined;
+        monthlyChecksLimit?: number | undefined;
+        yearOfStudy?: number | undefined;
+        degree?: string | undefined;
+        hasResume?: boolean | null | undefined;
+        resumeUrl?: string | undefined;
+        githubUrl?: string | undefined;
+        portfolioUrl?: string | undefined;
+        linkedInText?: string | undefined;
+    };
+    category: string;
+};
+export declare const iotInternshipOpportunity: {
+    title: string;
+    text: string;
+    checklist: {
+        title: string;
+        opportunityType: string;
+        requirements: {
+            id: string;
+            kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            label: string;
+            required: boolean;
+            value?: any;
+            title?: string | undefined;
+            sourceSentence?: string | undefined;
+            category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
+            rule?: string | undefined;
+            parsedRule?: {
+                allowedYears?: number[] | undefined;
+                degreeKeywords?: string[] | undefined;
+                minCgpa?: number | undefined;
+                maxCgpa?: number | undefined;
+                requiredSkills?: string[] | undefined;
+                preferredSkills?: string[] | undefined;
+                resumeRequired?: boolean | undefined;
+                githubOrPortfolioRequired?: boolean | undefined;
+                githubRequired?: boolean | undefined;
+                portfolioRequired?: boolean | undefined;
+                minAvailabilityWeeks?: number | undefined;
+            } | undefined;
+            importance?: "mandatory" | "preferred" | undefined;
+        }[];
+        sources: string[];
+        warnings?: string[] | undefined;
+    };
+    profile: {
+        skills: string[];
+        documents: {
+            type: string;
+            name: string;
+            verified: boolean;
+            id?: string | undefined;
+            url?: string | undefined;
+            issuedDate?: string | undefined;
+        }[];
+        links: {
+            github: string;
+            linkedin: string;
+            instagram: string;
+            portfolio: string;
+        };
+        name: string;
+        branch: string;
+        projects: {
+            status: string;
+            id: string;
+            title: string;
+            domains: string[];
+            tech: string[];
+            role: string;
+            proofLink: string;
+            description?: string | undefined;
+            link?: string | undefined;
+            techStack?: string[] | undefined;
+        }[];
+        id?: string | undefined;
+        year?: number | null | undefined;
+        cgpa?: number | null | undefined;
+        availabilityWeeks?: number | null | undefined;
+        plan?: "free" | "premium" | "college" | undefined;
+        monthlyChecksUsed?: number | undefined;
+        monthlyChecksLimit?: number | undefined;
+        yearOfStudy?: number | undefined;
+        degree?: string | undefined;
+        hasResume?: boolean | null | undefined;
+        resumeUrl?: string | undefined;
+        githubUrl?: string | undefined;
+        portfolioUrl?: string | undefined;
+        linkedInText?: string | undefined;
+    };
+    category: string;
+};
+export declare const sampleOpportunities: {
+    title: string;
+    text: string;
+    checklist: {
+        title: string;
+        opportunityType: string;
+        requirements: {
+            id: string;
+            kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            label: string;
+            required: boolean;
+            value?: any;
+            title?: string | undefined;
+            sourceSentence?: string | undefined;
+            category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
+            rule?: string | undefined;
+            parsedRule?: {
+                allowedYears?: number[] | undefined;
+                degreeKeywords?: string[] | undefined;
+                minCgpa?: number | undefined;
+                maxCgpa?: number | undefined;
+                requiredSkills?: string[] | undefined;
+                preferredSkills?: string[] | undefined;
+                resumeRequired?: boolean | undefined;
+                githubOrPortfolioRequired?: boolean | undefined;
+                githubRequired?: boolean | undefined;
+                portfolioRequired?: boolean | undefined;
+                minAvailabilityWeeks?: number | undefined;
+            } | undefined;
+            importance?: "mandatory" | "preferred" | undefined;
+        }[];
+        sources: string[];
+        warnings?: string[] | undefined;
+    };
+    profile: {
+        skills: string[];
+        documents: {
+            type: string;
+            name: string;
+            verified: boolean;
+            id?: string | undefined;
+            url?: string | undefined;
+            issuedDate?: string | undefined;
+        }[];
+        links: {
+            github: string;
+            linkedin: string;
+            instagram: string;
+            portfolio: string;
+        };
+        name: string;
+        branch: string;
+        projects: {
+            status: string;
+            id: string;
+            title: string;
+            domains: string[];
+            tech: string[];
+            role: string;
+            proofLink: string;
+            description?: string | undefined;
+            link?: string | undefined;
+            techStack?: string[] | undefined;
+        }[];
+        id?: string | undefined;
+        year?: number | null | undefined;
+        cgpa?: number | null | undefined;
+        availabilityWeeks?: number | null | undefined;
+        plan?: "free" | "premium" | "college" | undefined;
+        monthlyChecksUsed?: number | undefined;
+        monthlyChecksLimit?: number | undefined;
+        yearOfStudy?: number | undefined;
+        degree?: string | undefined;
+        hasResume?: boolean | null | undefined;
+        resumeUrl?: string | undefined;
+        githubUrl?: string | undefined;
+        portfolioUrl?: string | undefined;
+        linkedInText?: string | undefined;
+    };
+    category: string;
+}[];
+export declare const additionalSamples: {
+    title: string;
+    text: string;
+    checklist: {
+        title: string;
+        opportunityType: string;
+        requirements: {
+            id: string;
+            kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            label: string;
+            required: boolean;
+            value?: any;
+            title?: string | undefined;
+            sourceSentence?: string | undefined;
+            category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
+            rule?: string | undefined;
+            parsedRule?: {
+                allowedYears?: number[] | undefined;
+                degreeKeywords?: string[] | undefined;
+                minCgpa?: number | undefined;
+                maxCgpa?: number | undefined;
+                requiredSkills?: string[] | undefined;
+                preferredSkills?: string[] | undefined;
+                resumeRequired?: boolean | undefined;
+                githubOrPortfolioRequired?: boolean | undefined;
+                githubRequired?: boolean | undefined;
+                portfolioRequired?: boolean | undefined;
+                minAvailabilityWeeks?: number | undefined;
+            } | undefined;
+            importance?: "mandatory" | "preferred" | undefined;
+        }[];
+        sources: string[];
+        warnings?: string[] | undefined;
+    };
+    profile: {
+        skills: string[];
+        documents: {
+            type: string;
+            name: string;
+            verified: boolean;
+            id?: string | undefined;
+            url?: string | undefined;
+            issuedDate?: string | undefined;
+        }[];
+        links: {
+            github: string;
+            linkedin: string;
+            instagram: string;
+            portfolio: string;
+        };
+        name: string;
+        branch: string;
+        projects: {
+            status: string;
+            id: string;
+            title: string;
+            domains: string[];
+            tech: string[];
+            role: string;
+            proofLink: string;
+            description?: string | undefined;
+            link?: string | undefined;
+            techStack?: string[] | undefined;
+        }[];
+        id?: string | undefined;
+        year?: number | null | undefined;
+        cgpa?: number | null | undefined;
+        availabilityWeeks?: number | null | undefined;
+        plan?: "free" | "premium" | "college" | undefined;
+        monthlyChecksUsed?: number | undefined;
+        monthlyChecksLimit?: number | undefined;
+        yearOfStudy?: number | undefined;
+        degree?: string | undefined;
+        hasResume?: boolean | null | undefined;
+        resumeUrl?: string | undefined;
+        githubUrl?: string | undefined;
+        portfolioUrl?: string | undefined;
+        linkedInText?: string | undefined;
+    };
+    category: string;
+}[];
+//# sourceMappingURL=sample.d.ts.map

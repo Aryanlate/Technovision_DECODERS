@@ -1,0 +1,393 @@
+import type { Dictionary } from '../types';
+
+/**
+ * English dictionary — the source of truth.
+ * Every other locale falls back to these strings when a key is missing.
+ */
+const en: Dictionary = {
+  common: {
+    appName: 'OpportunityKit',
+    save: 'Save',
+    saved: 'Saved',
+    cancel: 'Cancel',
+    next: 'Next',
+    back: 'Back',
+    skip: 'Skip',
+    close: 'Close',
+    done: 'Done',
+    start: 'Start',
+    finish: 'Finish',
+    loading: 'Loading…',
+    retry: 'Retry',
+    reset: 'Reset',
+    edit: 'Edit',
+    delete: 'Delete',
+    add: 'Add',
+    remove: 'Remove',
+    confirm: 'Confirm',
+    yes: 'Yes',
+    no: 'No',
+    optional: 'Optional',
+    required: 'Required',
+    notProvided: 'Not provided',
+    unknown: 'Unknown',
+    copy: 'Copy',
+    copied: 'Copied',
+    download: 'Download',
+    share: 'Share',
+    error: 'Something went wrong.',
+    emptyInput: 'Paste an opportunity first so there is something to check.'
+  },
+
+  nav: {
+    check: 'Check',
+    profile: 'Profile',
+    discover: 'Discover',
+    tracker: 'Tracker',
+    college: 'College',
+    pricing: 'Pricing',
+    privacy: 'Privacy',
+    status: 'Status',
+    styleguide: 'Styleguide',
+    signIn: 'Sign in',
+    signOut: 'Sign out',
+    mainNavigation: 'Main Navigation',
+    brandHome: 'OpportunityKit — home',
+    openMenu: 'Open navigation menu',
+    closeMenu: 'Close navigation menu',
+    mobileMenu: 'Mobile navigation'
+  },
+
+  a11y: {
+    skipToContent: 'Skip to main content',
+    statusBadge: 'Status: {status}',
+    statusSummary: 'Result summary for screen readers',
+    externalLink: 'Opens in a new tab',
+    requiredField: 'Required field',
+    selected: 'selected',
+    notSelected: 'not selected',
+    countedStatus: '{count} {status}',
+    decorativeImage: 'Decorative illustration',
+    errorPrefix: 'Error:'
+  },
+
+  theme: {
+    label: 'Theme',
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System',
+    switchTheme: 'Switch theme',
+    usingSystem: 'Following your system setting'
+  },
+
+  language: {
+    label: 'Language',
+    change: 'Change language',
+    current: 'Current language: {language}'
+  },
+
+  shortcuts: {
+    title: 'Keyboard shortcuts',
+    open: 'Open keyboard shortcuts help',
+    close: 'Close dialog',
+    newCheck: 'Start a new check',
+    newProfile: 'Open your profile',
+    goTracker: 'Open the tracker',
+    focusPaste: 'Focus the paste box',
+    toggleTheme: 'Switch light / dark theme',
+    showHelp: 'Show this help dialog',
+    groupNavigation: 'Navigate',
+    groupActions: 'Actions',
+    groupHelp: 'Help'
+  },
+
+  onboarding: {
+    title: 'Welcome to OpportunityKit',
+    progress: 'Step {current} of {total}',
+    step1Title: 'Create your profile',
+    step1Body:
+      'Add your year, CGPA, skills, documents and project links once. Everything you check afterwards is compared against this profile.',
+    step2Title: 'Paste an opportunity',
+    step2Body:
+      'Paste an internship, scholarship or competition description. The rule engine lists every requirement it can read from the text.',
+    step3Title: 'Read your result',
+    step3Body:
+      'Each requirement gets Match, Mismatch or Missing info — with the reason and the single next step to unlock it.',
+    next: 'Next',
+    back: 'Back',
+    skip: 'Skip tour',
+    finish: 'Start using the app',
+    replay: 'Replay the guided tour',
+    replayHint: 'Opens the 3-step first-visit guide again.',
+    openProfile: 'Open profile',
+    openCheck: 'Open check',
+    openResult: 'Open result'
+  },
+
+  status: {
+    match: 'Match',
+    mismatch: 'Mismatch',
+    missingInfo: 'Missing info',
+    verified: 'Verified',
+    needsReview: 'Needs review',
+    unverified: 'Unverified',
+    lowRisk: 'Low risk',
+    mediumRisk: 'Medium risk',
+    highRisk: 'High risk',
+    aiSuggested: 'AI-suggested · confirm',
+    neutral: 'Neutral',
+    matches: 'Matches',
+    mismatches: 'Mismatches',
+    missingInfoPlural: 'Missing info',
+    readyToApply: 'Ready to apply',
+    almostReady: 'Almost ready',
+    notReadyYet: 'Not ready yet'
+  },
+
+  /**
+   * Rule reasons are rendered from these templates, never from the LLM.
+   * Placeholders come from the deterministic engine: {expected}, {value}.
+   */
+  rules: {
+    numberRule_Match: 'Your {value} meets the requirement ({expected}).',
+    numberRule_Mismatch: '{value} does not meet the requirement ({expected}).',
+    numberRule_Missing: 'This number is not specified in your profile.',
+    numberRule_next_Match: '',
+    numberRule_next_Mismatch: 'Reach the required level: {expected}.',
+    numberRule_next_Missing: 'Add this number to your profile (required: {expected}).',
+
+    rangeRule_Match: 'You match the required year ({expected}).',
+    rangeRule_Mismatch: 'Your year of study does not match the requirement ({expected}).',
+    rangeRule_Missing: 'Your year of study is not specified in your profile.',
+    rangeRule_next_Match: '',
+    rangeRule_next_Mismatch: 'This opportunity is reserved for {expected}.',
+    rangeRule_next_Missing: 'Set your current year of study (allowed: {expected}).',
+
+    listRule_Match: 'All required skills are present ({expected}).',
+    listRule_Mismatch: 'Some required skills are missing from your profile.',
+    listRule_Missing: 'No technical skills are listed in your profile.',
+    listRule_next_Match: '',
+    listRule_next_Mismatch: 'Build or document the missing skills before applying.',
+    listRule_next_Missing: 'Add your relevant technical skills ({expected}) to your profile.',
+
+    documentRule_Match: 'This document is ready in your profile.',
+    documentRule_Mismatch: 'This document is marked as not ready.',
+    documentRule_Missing: 'This document is not attached to your profile.',
+    documentRule_next_Match: '',
+    documentRule_next_Mismatch: 'Prepare this document and mark it ready.',
+    documentRule_next_Missing: 'Upload it, or add a verified link in your profile.',
+
+    linkRule_Match: 'The required link is valid and present.',
+    linkRule_Mismatch: 'The link is present but is not a valid URL.',
+    linkRule_Missing: 'The required link is not provided in your profile.',
+    linkRule_next_Match: '',
+    linkRule_next_Mismatch: 'Provide a valid URL (for example https://github.com/username).',
+    linkRule_next_Missing: 'Add this link to your profile.',
+
+    countRule_Match: 'You have enough projects for this requirement ({expected}).',
+    countRule_Mismatch: 'You have fewer projects than required ({expected}).',
+    countRule_Missing: 'No matching projects are listed in your profile.',
+    countRule_next_Match: '',
+    countRule_next_Mismatch: 'Add the remaining projects to your profile.',
+    countRule_next_Missing: 'Add at least {expected} to your profile.',
+
+    tagRule_Match: 'One of your projects matches the requested topic.',
+    tagRule_Mismatch: 'No project matches the requested topic.',
+    tagRule_Missing: 'There are no projects in your profile to check against.',
+    tagRule_next_Match: '',
+    tagRule_next_Mismatch: 'Add a project that demonstrates this topic.',
+    tagRule_next_Missing: 'Add a project featuring this topic to your profile.',
+
+    proofRule_Match: 'A valid proof link is provided for this project.',
+    proofRule_Mismatch: 'This project is missing a valid proof link.',
+    proofRule_Missing: 'There is no project to verify a proof link against.',
+    proofRule_next_Match: '',
+    proofRule_next_Mismatch: 'Add a public repository or live demo link.',
+    proofRule_next_Missing: 'Add project details with a proof link.',
+
+    availabilityRule_Match: 'Your availability meets the requirement ({expected}).',
+    availabilityRule_Mismatch: 'Your availability is short of the requirement ({expected}).',
+    availabilityRule_Missing: 'Your availability is not specified in your profile.',
+    availabilityRule_next_Match: '',
+    availabilityRule_next_Mismatch: 'Confirm that you can commit {expected}.',
+    availabilityRule_next_Missing: 'Confirm your availability in your profile ({expected}).',
+
+    deadlineRule_Match: 'The opportunity is still active ({expected}).',
+    deadlineRule_Mismatch: 'The submission deadline has passed.',
+    deadlineRule_Missing: 'The deadline is not specified.',
+    deadlineRule_next_Match: '',
+    deadlineRule_next_Mismatch: 'This application window is closed.',
+    deadlineRule_next_Missing: 'Check the official notice for the submission deadline.'
+  },
+
+  home: {
+    badge: 'SETU 2026 HACKATHON • PROBLEM STATEMENT PS-03',
+    title: 'Know what stands between you and the opportunity.',
+    lede:
+      'Build a profile once, paste any internship, scholarship or competition, and get a transparent checklist. Every requirement is judged by a plain-English rule engine and labelled Match, Mismatch or Missing info.',
+    ctaStart: 'Start a check',
+    ctaProfile: 'Build your profile',
+    ctaTracker: 'Open the tracker',
+    engineOnline: 'RULE ENGINE ACTIVE IN YOUR BROWSER',
+    engineOffline: 'BACKEND OFFLINE • USING THE BROWSER ENGINE',
+    howTag: 'How it works',
+    howTitle: 'Five steps, all transparent',
+    step1Title: 'Build your profile',
+    step1Body: 'Year, CGPA, skills, documents and project links — entered once, reused everywhere.',
+    step2Title: 'Paste the opportunity',
+    step2Body: 'The rule parser reads the eligibility criteria straight out of the description.',
+    step3Title: 'Agents gather evidence',
+    step3Body: 'Optional agents cite sources for anything the text leaves unclear.',
+    step4Title: 'The rule engine decides',
+    step4Body: 'Plain TypeScript compares profile and requirements. No AI decides your status.',
+    step5Title: 'Act on the next step',
+    step5Body: 'Each gap comes with one concrete fix and an exportable checklist.',
+    sampleTag: 'Sample result',
+    sampleTitle: 'Benchmark opportunity, at a glance',
+    tableRequirement: 'Requirement',
+    tableAsks: 'Opportunity Asks',
+    tableCredentials: 'Your Profile',
+    tableStatus: 'Status',
+    rowYear: 'Year of study',
+    rowCgpa: 'CGPA',
+    rowSkills: 'Skills',
+    rowResume: 'Resume',
+    rowPortfolio: 'Portfolio / GitHub',
+    rowAvailability: 'Availability',
+    sampleNote: '3 Match, 1 Mismatch, 2 Missing info — “Not ready yet”, with one fixable gap.',
+    unknownIsNotFail: '“Unknown” is never treated as a failure: an unanswered requirement is always Missing info.'
+  },
+
+  check: {
+    title: 'Check an opportunity',
+    tag: 'Step 2',
+    lede: 'Paste the full description. The rule parser reads the requirements first; agents only fill genuine gaps.',
+    pasteLabel: 'Opportunity description',
+    pastePlaceholder:
+      'Paste the internship, scholarship or competition description here, including eligibility criteria, skills and documents…',
+    pasteHint: 'Press / anywhere on this page to jump back to this box.',
+    loadSample: 'Load sample opportunity',
+    clear: 'Clear',
+    analyse: 'Analyse opportunity',
+    analysing: 'Analysing…',
+    tooShort: 'Add a little more text so the parser can find requirements.',
+    typeLabel: 'Opportunity type',
+    typeInternship: 'Internship',
+    typeScholarship: 'Scholarship',
+    typeCompetition: 'Competition',
+    typeOther: 'Other',
+    requirementsTitle: 'Requirements read from the text',
+    requirementsEmpty: 'No requirements detected yet. Paste a description above.',
+    addRequirement: 'Add a requirement',
+    removeRequirement: 'Remove requirement {index}',
+    reviewNotice: 'Items marked “AI-suggested · confirm” were proposed by an agent. Confirm before they count.',
+    useSampleProfile: 'Use the benchmark profile',
+    runCheck: 'Compare with my profile',
+    agentsTitle: 'Agent evidence',
+    savedToTracker: 'Saved to your tracker'
+  },
+
+  profile: {
+    title: 'Your profile',
+    tag: 'Step 1',
+    lede: 'This profile is the single source of truth every check reads from. Fields you leave blank produce Missing info, never a failure.',
+    basicsTitle: 'Basics',
+    name: 'Name',
+    year: 'Year of study',
+    branch: 'Branch',
+    cgpa: 'CGPA',
+    skillsTitle: 'Skills',
+    skillsHint: 'Press Enter to add a skill.',
+    documentsTitle: 'Documents',
+    linksTitle: 'Links',
+    projectsTitle: 'Projects',
+    availabilityWeeks: 'Availability (weeks)',
+    completeness: 'Profile completeness',
+    saveProfile: 'Save profile',
+    resetToSample: 'Reset to the sample profile',
+    addSkill: 'Add skill',
+    removeSkill: 'Remove skill {skill}',
+    addProject: 'Add project',
+    removeProject: 'Remove project {index}',
+    projectTitle: 'Project title',
+    projectTech: 'Technologies',
+    projectProof: 'Proof link'
+  },
+
+  result: {
+    title: 'Your result',
+    tag: 'Step 3',
+    lede: 'Every requirement with its status, its reason and the single fix that unlocks it.',
+    readiness: 'Readiness score',
+    summaryTitle: 'Summary',
+    auditTitle: 'Requirement audit',
+    nextStepsTitle: 'Next steps, quickest first',
+    whatIfTitle: 'What-if simulator',
+    whatIfHint: 'Toggle a fix to see how readiness changes. Your saved profile is never modified.',
+    projectFitTitle: 'Best-fit projects',
+    agentEvidenceTitle: 'Agent evidence',
+    exportPdf: 'Export PDF checklist',
+    exportIcs: 'Add deadline to calendar',
+    exportJson: 'Export as JSON',
+    shareLink: 'Create a shareable link',
+    fixNow: 'Fix this next',
+    noSources: 'No source link',
+    confirmItem: 'Confirm'
+  },
+
+  tracker: {
+    title: 'Application tracker',
+    tag: 'Pipeline',
+    lede: 'Every opportunity you saved, with its readiness, status and deadline.',
+    viewTable: 'Table',
+    viewBoard: 'Board',
+    viewLabel: 'Tracker view',
+    addItem: 'Add item',
+    empty: 'Nothing tracked yet. Run a check and save the result to your tracker.',
+    exportJson: 'Export JSON',
+    exportPdf: 'Export PDF',
+    exportIcs: 'Export calendar',
+    share: 'Share',
+    deadlineSoon: 'Deadline within 7 days',
+    statusLabel: 'Application status',
+    notes: 'Notes',
+    deleteItem: 'Delete {title}'
+  },
+
+  pricing: {
+    title: 'Pricing',
+    tag: 'Plans',
+    lede: 'The rule engine is free and unlimited. Paid plans only add optional agent and export conveniences.',
+    free: 'Free',
+    premium: 'Premium',
+    college: 'College',
+    perMonth: 'per month',
+    choosePlan: 'Choose plan',
+    currentPlan: 'Current plan',
+    usage: 'Checks used this month',
+    features: 'What is included',
+    checkoutTitle: 'Checkout',
+    mostPopular: 'Most popular'
+  },
+
+  footer: {
+    corePrinciple: 'Core principle',
+    corePrincipleBody:
+      'AI agents gather evidence; a transparent, rule-based engine (plain TypeScript, no AI) makes the final decision.',
+    invariantTitle: 'Invariant guarantee',
+    invariantBody:
+      '“Unknown” is NEVER treated as fails. If the profile has no answer, the status is always Missing info.',
+    index: 'Index & navigation',
+    presentationMode: 'Presentation mode',
+    presentationOn: 'Offline-safe. Cached benchmark results enable zero-network presentation.',
+    presentationOff: 'Live mode. Connects to backend API and external provider services.',
+    demoOn: 'Demo Mode: ON',
+    demoOff: 'Demo Mode: OFF',
+    active: 'ACTIVE',
+    off: 'OFF',
+    colophon: 'SETU 2026 HACKATHON • PROBLEM STATEMENT PS-03',
+    aesthetic: 'MINIMAL EDITORIAL AESTHETIC • ZERO GRADIENTS • ZERO SHADOWS'
+  }
+};
+
+export default en;

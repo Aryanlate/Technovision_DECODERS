@@ -1,0 +1,338 @@
+{
+  "HTML": {
+    "skill": "HTML",
+    "hours": 15,
+    "links": [
+      {
+        "title": "MDN Web Docs - HTML: Structuring the web",
+        "url": "https://developer.mozilla.org/en-US/docs/Learn/HTML",
+        "hours": 15
+      },
+      {
+        "title": "freeCodeCamp - Responsive Web Design (HTML)",
+        "url": "https://www.freecodecamp.org/learn/2022/responsive-web-design/",
+        "hours": 20
+      }
+    ]
+  },
+  "CSS": {
+    "skill": "CSS",
+    "hours": 20,
+    "links": [
+      {
+        "title": "MDN Web Docs - Learn CSS",
+        "url": "https://developer.mozilla.org/en-US/docs/Learn/CSS",
+        "hours": 20
+      },
+      {
+        "title": "web.dev - Learn CSS by Google",
+        "url": "https://web.dev/learn/css",
+        "hours": 25
+      }
+    ]
+  },
+  "JavaScript": {
+    "skill": "JavaScript",
+    "hours": 30,
+    "links": [
+      {
+        "title": "MDN Web Docs - JavaScript Guide",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+        "hours": 25
+      },
+      {
+        "title": "The Modern JavaScript Tutorial",
+        "url": "https://javascript.info/",
+        "hours": 35
+      }
+    ]
+  },
+  "Python": {
+    "skill": "Python",
+    "hours": 25,
+    "links": [
+      {
+        "title": "Official Python Tutorial",
+        "url": "https://docs.python.org/3/tutorial/",
+        "hours": 20
+      },
+      {
+        "title": "freeCodeCamp - Scientific Computing with Python",
+        "url": "https://www.freecodecamp.org/learn/scientific-computing-with-python/",
+        "hours": 30
+      }
+    ]
+  },
+  "React": {
+    "skill": "React",
+    "hours": 25,
+    "links": [
+      {
+        "title": "Official React Documentation & Tutorial",
+        "url": "https://react.dev/learn",
+        "hours": 20
+      },
+      {
+        "title": "freeCodeCamp - Front End Development Libraries",
+        "url": "https://www.freecodecamp.org/learn/front-end-development-libraries/",
+        "hours": 30
+      }
+    ]
+  },
+  "SQL": {
+    "skill": "SQL",
+    "hours": 15,
+    "links": [
+      {
+        "title": "SQLBolt - Interactive SQL Lessons",
+        "url": "https://sqlbolt.com/",
+        "hours": 12
+      },
+      {
+        "title": "PostgreSQL Tutorial for Beginners",
+        "url": "https://www.postgresqltutorial.com/",
+        "hours": 18
+      }
+    ]
+  },
+  "Git": {
+    "skill": "Git",
+    "hours": 10,
+    "links": [
+      {
+        "title": "Pro Git Book (Official Free Edition)",
+        "url": "https://git-scm.com/book/en/v2",
+        "hours": 12
+      },
+      {
+        "title": "Learn Git Branching (Interactive Guide)",
+        "url": "https://learngitbranching.js.org/",
+        "hours": 8
+      }
+    ]
+  },
+  "Node": {
+    "skill": "Node",
+    "hours": 25,
+    "links": [
+      {
+        "title": "Node.js Official Documentation & Getting Started",
+        "url": "https://nodejs.org/en/learn",
+        "hours": 20
+      },
+      {
+        "title": "freeCodeCamp - Back End Development and APIs",
+        "url": "https://www.freecodecamp.org/learn/back-end-development-and-apis/",
+        "hours": 30
+      }
+    ]
+  },
+  "Arduino": {
+    "skill": "Arduino",
+    "hours": 15,
+    "links": [
+      {
+        "title": "Arduino Getting Started Guide & Tutorials",
+        "url": "https://docs.arduino.cc/learn/",
+        "hours": 15
+      },
+      {
+        "title": "Adafruit Learning System - Arduino Basics",
+        "url": "https://learn.adafruit.com/category/learn-arduino",
+        "hours": 18
+      }
+    ]
+  },
+  "IoT": {
+    "skill": "IoT",
+    "hours": 25,
+    "links": [
+      {
+        "title": "Microsoft IoT for Beginners (24 Lessons)",
+        "url": "https://github.com/microsoft/IoT-For-Beginners",
+        "hours": 25
+      },
+      {
+        "title": "Coursera - Introduction to the Internet of Things (Audit Free)",
+        "url": "https://www.coursera.org/learn/iot",
+        "hours": 20
+      }
+    ]
+  },
+  "Machine Learning": {
+    "skill": "Machine Learning",
+    "hours": 40,
+    "links": [
+      {
+        "title": "Google Machine Learning Crash Course",
+        "url": "https://developers.google.com/machine-learning/crash-course",
+        "hours": 30
+      },
+      {
+        "title": "fast.ai - Practical Deep Learning for Coders",
+        "url": "https://course.fast.ai/",
+        "hours": 45
+      }
+    ]
+  },
+  "TypeScript": {
+    "skill": "TypeScript",
+    "hours": 18,
+    "links": [
+      {
+        "title": "Official TypeScript Handbook",
+        "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+        "hours": 16
+      },
+      {
+        "title": "Execute Program - TypeScript Fundamentals",
+        "url": "https://www.executeprogram.com/courses/typescript",
+        "hours": 20
+      }
+    ]
+  },
+  "Java": {
+    "skill": "Java",
+    "hours": 30,
+    "links": [
+      {
+        "title": "University of Helsinki - Java MOOC",
+        "url": "https://java-programming.mooc.fi/",
+        "hours": 35
+      },
+      {
+        "title": "Oracle Official Java Tutorials",
+        "url": "https://docs.oracle.com/javase/tutorial/",
+        "hours": 25
+      }
+    ]
+  },
+  "C++": {
+    "skill": "C++",
+    "hours": 30,
+    "links": [
+      {
+        "title": "LearnCpp.com - Free In-Depth C++ Tutorial",
+        "url": "https://www.learncpp.com/",
+        "hours": 35
+      },
+      {
+        "title": "cppreference.com - C++ Language Reference",
+        "url": "https://en.cppreference.com/w/cpp",
+        "hours": 20
+      }
+    ]
+  },
+  "Docker": {
+    "skill": "Docker",
+    "hours": 12,
+    "links": [
+      {
+        "title": "Docker Official Getting Started Tutorial",
+        "url": "https://docs.docker.com/get-started/",
+        "hours": 10
+      },
+      {
+        "title": "Docker Labs - Beginner Linux & Container Exercises",
+        "url": "https://github.com/docker/labs",
+        "hours": 14
+      }
+    ]
+  },
+  "Next.js": {
+    "skill": "Next.js",
+    "hours": 18,
+    "links": [
+      {
+        "title": "Next.js Official Interactive Learn Course",
+        "url": "https://nextjs.org/learn",
+        "hours": 16
+      },
+      {
+        "title": "freeCodeCamp - Next.js App Router Guide",
+        "url": "https://www.freecodecamp.org/news/nextjs-app-router-course/",
+        "hours": 20
+      }
+    ]
+  },
+  "Express": {
+    "skill": "Express",
+    "hours": 15,
+    "links": [
+      {
+        "title": "MDN Web Docs - Express Web Framework (Node.js)",
+        "url": "https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs",
+        "hours": 15
+      },
+      {
+        "title": "Official Express.js Getting Started Guide",
+        "url": "https://expressjs.com/en/starter/installing.html",
+        "hours": 12
+      }
+    ]
+  },
+  "Linux": {
+    "skill": "Linux",
+    "hours": 15,
+    "links": [
+      {
+        "title": "Linux Journey - Grasshopper to Guru",
+        "url": "https://linuxjourney.com/",
+        "hours": 15
+      },
+      {
+        "title": "OverTheWire: Bandit (Wargame for Linux CLI)",
+        "url": "https://overthewire.org/wargames/bandit/",
+        "hours": 12
+      }
+    ]
+  },
+  "MongoDB": {
+    "skill": "MongoDB",
+    "hours": 14,
+    "links": [
+      {
+        "title": "MongoDB University - Free Developer Courses",
+        "url": "https://learn.mongodb.com/",
+        "hours": 14
+      },
+      {
+        "title": "W3Schools - MongoDB Tutorial",
+        "url": "https://www.w3schools.com/mongodb/",
+        "hours": 10
+      }
+    ]
+  },
+  "Tailwind CSS": {
+    "skill": "Tailwind CSS",
+    "hours": 10,
+    "links": [
+      {
+        "title": "Tailwind CSS Official Documentation & Core Concepts",
+        "url": "https://tailwindcss.com/docs/utility-first",
+        "hours": 8
+      },
+      {
+        "title": "Scrimba - Learn Tailwind CSS Interactively",
+        "url": "https://scrimba.com/learn/tailwind",
+        "hours": 10
+      }
+    ]
+  },
+  "Embedded C": {
+    "skill": "Embedded C",
+    "hours": 25,
+    "links": [
+      {
+        "title": "Quantum Leaps - Modern Embedded Systems Programming",
+        "url": "https://www.state-machine.com/video-course",
+        "hours": 25
+      },
+      {
+        "title": "Embedded.fm - Embedded Systems Tutorials",
+        "url": "https://embedded.fm/",
+        "hours": 20
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "opportunity-kit",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -p \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"yellow.bold,blue.bold\" \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build:shared": "npm run build --workspace=shared",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build": "npm run build:shared && npm run build:backend && npm run build:frontend",
+    "build:render": "npm run build:shared && npm run build:backend",
+    "test": "npm run test --workspace=shared && npm run test --workspace=backend",
+    "test:backend": "npm run test --workspace=backend",
+    "test:vitest": "npm run test:vitest --workspace=shared",
+    "test:sample": "npm run test:sample --workspace=shared",
+    "wake": "node scripts/wake.mjs",
+    "smoke": "node scripts/smoke-test.mjs",
+    "demo-check": "node scripts/demo-check.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

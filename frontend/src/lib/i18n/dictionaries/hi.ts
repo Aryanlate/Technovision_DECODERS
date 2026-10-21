@@ -1,0 +1,381 @@
+import type { Dictionary } from '../types';
+
+/**
+ * Hindi dictionary. Any key omitted here falls back to the English string,
+ * so a partially translated screen still reads correctly.
+ */
+const hi: Dictionary = {
+  common: {
+    save: 'सहेजें',
+    saved: 'सहेजा गया',
+    cancel: 'रद्द करें',
+    next: 'आगे',
+    back: 'पीछे',
+    skip: 'छोड़ें',
+    close: 'बंद करें',
+    done: 'पूरा हुआ',
+    start: 'शुरू करें',
+    finish: 'समाप्त करें',
+    loading: 'लोड हो रहा है…',
+    retry: 'फिर कोशिश करें',
+    reset: 'रीसेट करें',
+    edit: 'संपादित करें',
+    delete: 'हटाएँ',
+    add: 'जोड़ें',
+    remove: 'हटाएँ',
+    confirm: 'पुष्टि करें',
+    yes: 'हाँ',
+    no: 'नहीं',
+    optional: 'वैकल्पिक',
+    required: 'आवश्यक',
+    notProvided: 'नहीं दिया गया',
+    unknown: 'अज्ञात',
+    copy: 'कॉपी करें',
+    copied: 'कॉपी हो गया',
+    download: 'डाउनलोड करें',
+    share: 'साझा करें',
+    error: 'कुछ गड़बड़ हो गई।',
+    emptyInput: 'पहले कोई अवसर पेस्ट करें ताकि जाँचने के लिए कुछ हो।'
+  },
+
+  nav: {
+    check: 'जाँच',
+    profile: 'प्रोफ़ाइल',
+    discover: 'खोजें',
+    tracker: 'ट्रैकर',
+    college: 'कॉलेज',
+    pricing: 'मूल्य',
+    privacy: 'गोपनीयता',
+    status: 'स्थिति',
+    styleguide: 'स्टाइल गाइड',
+    signIn: 'साइन इन',
+    signOut: 'साइन आउट',
+    mainNavigation: 'मुख्य नेविगेशन',
+    brandHome: 'OpportunityKit — मुख्य पृष्ठ',
+    openMenu: 'नेविगेशन मेन्यू खोलें',
+    closeMenu: 'नेविगेशन मेन्यू बंद करें',
+    mobileMenu: 'मोबाइल नेविगेशन'
+  },
+
+  a11y: {
+    skipToContent: 'मुख्य सामग्री पर जाएँ',
+    statusBadge: 'स्थिति: {status}',
+    statusSummary: 'स्क्रीन रीडर के लिए परिणाम सारांश',
+    externalLink: 'नए टैब में खुलता है',
+    requiredField: 'आवश्यक फ़ील्ड',
+    selected: 'चयनित',
+    notSelected: 'चयनित नहीं',
+    countedStatus: '{count} {status}',
+    decorativeImage: 'सजावटी चित्र',
+    errorPrefix: 'त्रुटि:'
+  },
+
+  theme: {
+    label: 'थीम',
+    light: 'हल्की',
+    dark: 'गहरी',
+    system: 'सिस्टम',
+    switchTheme: 'थीम बदलें',
+    usingSystem: 'आपकी सिस्टम सेटिंग के अनुसार'
+  },
+
+  language: {
+    label: 'भाषा',
+    change: 'भाषा बदलें',
+    current: 'वर्तमान भाषा: {language}'
+  },
+
+  shortcuts: {
+    title: 'कीबोर्ड शॉर्टकट',
+    open: 'कीबोर्ड शॉर्टकट सहायता खोलें',
+    close: 'डायलॉग बंद करें',
+    newCheck: 'नई जाँच शुरू करें',
+    newProfile: 'अपनी प्रोफ़ाइल खोलें',
+    goTracker: 'ट्रैकर खोलें',
+    focusPaste: 'पेस्ट बॉक्स पर फ़ोकस करें',
+    toggleTheme: 'हल्की / गहरी थीम बदलें',
+    showHelp: 'यह सहायता डायलॉग दिखाएँ',
+    groupNavigation: 'नेविगेट करें',
+    groupActions: 'क्रियाएँ',
+    groupHelp: 'सहायता'
+  },
+
+  onboarding: {
+    title: 'OpportunityKit में आपका स्वागत है',
+    progress: 'चरण {current} / {total}',
+    step1Title: 'अपनी प्रोफ़ाइल बनाएँ',
+    step1Body:
+      'अपना वर्ष, CGPA, कौशल, दस्तावेज़ और प्रोजेक्ट लिंक एक बार जोड़ें। इसके बाद हर जाँच इसी प्रोफ़ाइल से तुलना करती है।',
+    step2Title: 'अवसर पेस्ट करें',
+    step2Body:
+      'कोई इंटर्नशिप, छात्रवृत्ति या प्रतियोगिता का विवरण पेस्ट करें। नियम इंजन टेक्स्ट से हर पठनीय शर्त की सूची बनाता है।',
+    step3Title: 'अपना परिणाम पढ़ें',
+    step3Body:
+      'हर शर्त को Match, Mismatch या Missing info मिलता है — कारण और उसे पूरा करने वाला अगला कदम भी।',
+    next: 'आगे',
+    back: 'पीछे',
+    skip: 'टूर छोड़ें',
+    finish: 'ऐप इस्तेमाल करें',
+    replay: 'गाइडेड टूर फिर चलाएँ',
+    replayHint: '3-चरणीय पहली-बार गाइड फिर से खोलता है।',
+    openProfile: 'प्रोफ़ाइल खोलें',
+    openCheck: 'जाँच खोलें',
+    openResult: 'परिणाम खोलें'
+  },
+
+  status: {
+    match: 'मेल',
+    mismatch: 'बेमेल',
+    missingInfo: 'जानकारी नहीं',
+    verified: 'सत्यापित',
+    needsReview: 'समीक्षा आवश्यक',
+    unverified: 'असत्यापित',
+    lowRisk: 'कम जोखिम',
+    mediumRisk: 'मध्यम जोखिम',
+    highRisk: 'उच्च जोखिम',
+    aiSuggested: 'AI-सुझाव · पुष्टि करें',
+    neutral: 'तटस्थ',
+    matches: 'मेल',
+    mismatches: 'बेमेल',
+    missingInfoPlural: 'जानकारी नहीं',
+    readyToApply: 'आवेदन के लिए तैयार',
+    almostReady: 'लगभग तैयार',
+    notReadyYet: 'अभी तैयार नहीं'
+  },
+
+  rules: {
+    numberRule_Match: 'आपका {value} शर्त पूरी करता है ({expected})।',
+    numberRule_Mismatch: '{value} शर्त पूरी नहीं करता ({expected})।',
+    numberRule_Missing: 'यह संख्या आपकी प्रोफ़ाइल में दर्ज नहीं है।',
+    numberRule_next_Mismatch: 'आवश्यक स्तर तक पहुँचें: {expected}।',
+    numberRule_next_Missing: 'यह संख्या प्रोफ़ाइल में जोड़ें (आवश्यक: {expected})।',
+
+    rangeRule_Match: 'आप आवश्यक वर्ष से मेल खाते हैं ({expected})।',
+    rangeRule_Mismatch: 'आपका अध्ययन वर्ष शर्त से मेल नहीं खाता ({expected})।',
+    rangeRule_Missing: 'आपका अध्ययन वर्ष प्रोफ़ाइल में दर्ज नहीं है।',
+    rangeRule_next_Mismatch: 'यह अवसर {expected} के लिए है।',
+    rangeRule_next_Missing: 'अपना वर्तमान अध्ययन वर्ष दर्ज करें (अनुमत: {expected})।',
+
+    listRule_Match: 'सभी आवश्यक कौशल मौजूद हैं ({expected})।',
+    listRule_Mismatch: 'कुछ आवश्यक कौशल आपकी प्रोफ़ाइल में नहीं हैं।',
+    listRule_Missing: 'आपकी प्रोफ़ाइल में कोई तकनीकी कौशल दर्ज नहीं है।',
+    listRule_next_Mismatch: 'आवेदन से पहले छूटे कौशल सीखें या दर्ज करें।',
+    listRule_next_Missing: 'अपनी प्रासंगिक तकनीकी कौशल ({expected}) प्रोफ़ाइल में जोड़ें।',
+
+    documentRule_Match: 'यह दस्तावेज़ आपकी प्रोफ़ाइल में तैयार है।',
+    documentRule_Mismatch: 'यह दस्तावेज़ तैयार नहीं बताया गया है।',
+    documentRule_Missing: 'यह दस्तावेज़ आपकी प्रोफ़ाइल से जुड़ा नहीं है।',
+    documentRule_next_Mismatch: 'यह दस्तावेज़ तैयार करें और तैयार के रूप में दर्ज करें।',
+    documentRule_next_Missing: 'इसे अपलोड करें या प्रोफ़ाइल में सत्यापित लिंक जोड़ें।',
+
+    linkRule_Match: 'आवश्यक लिंक मौजूद है और सही है।',
+    linkRule_Mismatch: 'लिंक मौजूद है पर वैध URL नहीं है।',
+    linkRule_Missing: 'आवश्यक लिंक आपकी प्रोफ़ाइल में नहीं दिया गया है।',
+    linkRule_next_Mismatch: 'वैध URL दें (जैसे https://github.com/username)।',
+    linkRule_next_Missing: 'यह लिंक अपनी प्रोफ़ाइल में जोड़ें।',
+
+    countRule_Match: 'इस शर्त के लिए आपके पास पर्याप्त प्रोजेक्ट हैं ({expected})।',
+    countRule_Mismatch: 'आवश्यकता से कम प्रोजेक्ट हैं ({expected})।',
+    countRule_Missing: 'आपकी प्रोफ़ाइल में मेल खाते प्रोजेक्ट दर्ज नहीं हैं।',
+    countRule_next_Mismatch: 'बाकी प्रोजेक्ट प्रोफ़ाइल में जोड़ें।',
+    countRule_next_Missing: 'प्रोफ़ाइल में कम से कम {expected} जोड़ें।',
+
+    tagRule_Match: 'आपके प्रोजेक्ट में से एक माँगे गए विषय से मेल खाता है।',
+    tagRule_Mismatch: 'कोई प्रोजेक्ट माँगे गए विषय से मेल नहीं खाता।',
+    tagRule_Missing: 'तुलना के लिए आपकी प्रोफ़ाइल में कोई प्रोजेक्ट नहीं है।',
+    tagRule_next_Mismatch: 'इस विषय को दर्शाने वाला प्रोजेक्ट जोड़ें।',
+    tagRule_next_Missing: 'इस विषय वाला प्रोजेक्ट प्रोफ़ाइल में जोड़ें।',
+
+    proofRule_Match: 'इस प्रोजेक्ट के लिए वैध प्रमाण लिंक दिया गया है।',
+    proofRule_Mismatch: 'इस प्रोजेक्ट में वैध प्रमाण लिंक नहीं है।',
+    proofRule_Missing: 'प्रमाण लिंक जाँचने के लिए कोई प्रोजेक्ट नहीं है।',
+    proofRule_next_Mismatch: 'सार्वजनिक रिपॉज़िटरी या लाइव डेमो लिंक जोड़ें।',
+    proofRule_next_Missing: 'प्रमाण लिंक के साथ प्रोजेक्ट विवरण जोड़ें।',
+
+    availabilityRule_Match: 'आपकी उपलब्धता शर्त पूरी करती है ({expected})।',
+    availabilityRule_Mismatch: 'आपकी उपलब्धता शर्त से कम है ({expected})।',
+    availabilityRule_Missing: 'आपकी उपलब्धता प्रोफ़ाइल में दर्ज नहीं है।',
+    availabilityRule_next_Mismatch: 'पुष्टि करें कि आप {expected} दे सकते हैं।',
+    availabilityRule_next_Missing: 'प्रोफ़ाइल में अपनी उपलब्धता दर्ज करें ({expected})।',
+
+    deadlineRule_Match: 'यह अवसर अभी सक्रिय है ({expected})।',
+    deadlineRule_Mismatch: 'आवेदन की अंतिम तिथि बीत चुकी है।',
+    deadlineRule_Missing: 'अंतिम तिथि दर्ज नहीं है।',
+    deadlineRule_next_Mismatch: 'इस अवसर का आवेदन बंद हो चुका है।',
+    deadlineRule_next_Missing: 'आधिकारिक सूचना में अंतिम तिथि देखें।'
+  },
+
+  home: {
+    badge: 'SETU 2026 हैकाथॉन • समस्या कथन PS-03',
+    title: 'जानें कि आपके और अवसर के बीच क्या है।',
+    lede:
+      'प्रोफ़ाइल एक बार बनाएँ, कोई भी इंटर्नशिप, छात्रवृत्ति या प्रतियोगिता पेस्ट करें, और पारदर्शी चेकलिस्ट पाएँ। हर शर्त को सादे नियम इंजन से Match, Mismatch या Missing info का लेबल मिलता है।',
+    ctaStart: 'जाँच शुरू करें',
+    ctaProfile: 'प्रोफ़ाइल बनाएँ',
+    ctaTracker: 'ट्रैकर खोलें',
+    engineOnline: 'नियम इंजन आपके ब्राउज़र में सक्रिय है',
+    engineOffline: 'बैकएंड ऑफ़लाइन • ब्राउज़र इंजन इस्तेमाल हो रहा है',
+    howTag: 'यह कैसे काम करता है',
+    howTitle: 'पाँच कदम, सब पारदर्शी',
+    step1Title: 'प्रोफ़ाइल बनाएँ',
+    step1Body: 'वर्ष, CGPA, कौशल, दस्तावेज़ और प्रोजेक्ट लिंक — एक बार भरें, हर जगह इस्तेमाल हों।',
+    step2Title: 'अवसर पेस्ट करें',
+    step2Body: 'नियम पार्सर विवरण से सीधे पात्रता शर्तें पढ़ता है।',
+    step3Title: 'एजेंट प्रमाण जुटाते हैं',
+    step3Body: 'टेक्स्ट में जो स्पष्ट नहीं है, उसके लिए वैकल्पिक एजेंट स्रोत बताते हैं।',
+    step4Title: 'नियम इंजन निर्णय लेता है',
+    step4Body: 'सादा TypeScript प्रोफ़ाइल और शर्तों की तुलना करता है। कोई AI आपकी स्थिति तय नहीं करता।',
+    step5Title: 'अगला कदम उठाएँ',
+    step5Body: 'हर कमी के साथ एक ठोस उपाय और एक्सपोर्ट करने योग्य चेकलिस्ट मिलती है।',
+    sampleTag: 'नमूना परिणाम',
+    sampleTitle: 'बेंचमार्क अवसर, एक नज़र में',
+    tableRequirement: 'शर्त',
+    tableAsks: 'अवसर की माँग',
+    tableCredentials: 'आपकी प्रोफ़ाइल',
+    tableStatus: 'स्थिति',
+    rowYear: 'अध्ययन वर्ष',
+    rowCgpa: 'CGPA',
+    rowSkills: 'कौशल',
+    rowResume: 'रेज़्यूमे',
+    rowPortfolio: 'पोर्टफ़ोलियो / GitHub',
+    rowAvailability: 'उपलब्धता',
+    sampleNote: '3 Match, 1 Mismatch, 2 Missing info — “अभी तैयार नहीं”, एक सुधारने योग्य कमी के साथ।',
+    unknownIsNotFail:
+      '“अज्ञात” को कभी असफलता नहीं माना जाता: बिना उत्तर वाली शर्त हमेशा Missing info होती है।'
+  },
+
+  check: {
+    title: 'अवसर की जाँच करें',
+    tag: 'चरण 2',
+    lede: 'पूरा विवरण पेस्ट करें। नियम पार्सर पहले शर्तें पढ़ता है; एजेंट केवल वास्तविक कमियाँ भरते हैं।',
+    pasteLabel: 'अवसर का विवरण',
+    pastePlaceholder:
+      'इंटर्नशिप, छात्रवृत्ति या प्रतियोगिता का विवरण यहाँ पेस्ट करें — पात्रता शर्तें, कौशल और दस्तावेज़ सहित…',
+    pasteHint: 'इस पेज पर कहीं भी / दबाकर इस बॉक्स पर वापस आएँ।',
+    loadSample: 'नमूना अवसर लोड करें',
+    clear: 'साफ़ करें',
+    analyse: 'अवसर का विश्लेषण करें',
+    analysing: 'विश्लेषण हो रहा है…',
+    tooShort: 'थोड़ा और टेक्स्ट जोड़ें ताकि पार्सर शर्तें ढूँढ सके।',
+    typeLabel: 'अवसर का प्रकार',
+    typeInternship: 'इंटर्नशिप',
+    typeScholarship: 'छात्रवृत्ति',
+    typeCompetition: 'प्रतियोगिता',
+    typeOther: 'अन्य',
+    requirementsTitle: 'टेक्स्ट से पढ़ी गई शर्तें',
+    requirementsEmpty: 'अभी कोई शर्त नहीं मिली। ऊपर विवरण पेस्ट करें।',
+    addRequirement: 'शर्त जोड़ें',
+    removeRequirement: 'शर्त {index} हटाएँ',
+    reviewNotice:
+      '“AI-सुझाव · पुष्टि करें” वाले आइटम एजेंट ने सुझाए हैं। गिने जाने से पहले पुष्टि करें।',
+    useSampleProfile: 'बेंचमार्क प्रोफ़ाइल इस्तेमाल करें',
+    runCheck: 'मेरी प्रोफ़ाइल से तुलना करें',
+    agentsTitle: 'एजेंट प्रमाण',
+    savedToTracker: 'आपके ट्रैकर में सहेजा गया'
+  },
+
+  profile: {
+    title: 'आपकी प्रोफ़ाइल',
+    tag: 'चरण 1',
+    lede:
+      'यही प्रोफ़ाइल हर जाँच का आधार है। खाली छोड़े गए फ़ील्ड Missing info बनाते हैं, असफलता नहीं।',
+    basicsTitle: 'बुनियादी जानकारी',
+    name: 'नाम',
+    year: 'अध्ययन वर्ष',
+    branch: 'शाखा',
+    cgpa: 'CGPA',
+    skillsTitle: 'कौशल',
+    skillsHint: 'कौशल जोड़ने के लिए Enter दबाएँ।',
+    documentsTitle: 'दस्तावेज़',
+    linksTitle: 'लिंक',
+    projectsTitle: 'प्रोजेक्ट',
+    availabilityWeeks: 'उपलब्धता (सप्ताह)',
+    completeness: 'प्रोफ़ाइल पूर्णता',
+    saveProfile: 'प्रोफ़ाइल सहेजें',
+    resetToSample: 'नमूना प्रोफ़ाइल पर लौटें',
+    addSkill: 'कौशल जोड़ें',
+    removeSkill: 'कौशल {skill} हटाएँ',
+    addProject: 'प्रोजेक्ट जोड़ें',
+    removeProject: 'प्रोजेक्ट {index} हटाएँ',
+    projectTitle: 'प्रोजेक्ट का नाम',
+    projectTech: 'तकनीकें',
+    projectProof: 'प्रमाण लिंक'
+  },
+
+  result: {
+    title: 'आपका परिणाम',
+    tag: 'चरण 3',
+    lede: 'हर शर्त, उसकी स्थिति, कारण और उसे पूरा करने वाला एक कदम।',
+    readiness: 'तैयारी स्कोर',
+    summaryTitle: 'सारांश',
+    auditTitle: 'शर्तों का लेखा-जोखा',
+    nextStepsTitle: 'अगले कदम, सबसे तेज़ पहले',
+    whatIfTitle: 'व्हाट-इफ़ सिम्युलेटर',
+    whatIfHint: 'उपाय चालू करके देखें कि तैयारी कैसे बदलती है। सहेजी गई प्रोफ़ाइल कभी नहीं बदलती।',
+    projectFitTitle: 'सबसे उपयुक्त प्रोजेक्ट',
+    agentEvidenceTitle: 'एजेंट प्रमाण',
+    exportPdf: 'PDF चेकलिस्ट निकालें',
+    exportIcs: 'कैलेंडर में अंतिम तिथि जोड़ें',
+    exportJson: 'JSON में निर्यात करें',
+    shareLink: 'साझा लिंक बनाएँ',
+    fixNow: 'अगला यह ठीक करें',
+    noSources: 'कोई स्रोत लिंक नहीं',
+    confirmItem: 'पुष्टि करें'
+  },
+
+  tracker: {
+    title: 'आवेदन ट्रैकर',
+    tag: 'पाइपलाइन',
+    lede: 'आपके सहेजे हर अवसर की तैयारी, स्थिति और अंतिम तिथि।',
+    viewTable: 'तालिका',
+    viewBoard: 'बोर्ड',
+    viewLabel: 'ट्रैकर दृश्य',
+    addItem: 'आइटम जोड़ें',
+    empty: 'अभी कुछ ट्रैक नहीं है। जाँच चलाएँ और परिणाम ट्रैकर में सहेजें।',
+    exportJson: 'JSON निर्यात',
+    exportPdf: 'PDF निर्यात',
+    exportIcs: 'कैलेंडर निर्यात',
+    share: 'साझा करें',
+    deadlineSoon: '7 दिनों में अंतिम तिथि',
+    statusLabel: 'आवेदन की स्थिति',
+    notes: 'टिप्पणियाँ',
+    deleteItem: '{title} हटाएँ'
+  },
+
+  pricing: {
+    title: 'मूल्य',
+    tag: 'प्लान',
+    lede: 'नियम इंजन मुफ़्त और असीमित है। सशुल्क प्लान केवल वैकल्पिक एजेंट और निर्यात सुविधाएँ जोड़ते हैं।',
+    free: 'मुफ़्त',
+    premium: 'प्रीमियम',
+    college: 'कॉलेज',
+    perMonth: 'प्रति माह',
+    choosePlan: 'प्लान चुनें',
+    currentPlan: 'वर्तमान प्लान',
+    usage: 'इस माह की जाँचें',
+    features: 'क्या शामिल है',
+    checkoutTitle: 'भुगतान',
+    mostPopular: 'सबसे लोकप्रिय'
+  },
+
+  footer: {
+    corePrinciple: 'मूल सिद्धांत',
+    corePrincipleBody:
+      'AI एजेंट प्रमाण जुटाते हैं; अंतिम निर्णय पारदर्शी नियम-आधारित इंजन (सादा TypeScript, कोई AI नहीं) लेता है।',
+    invariantTitle: 'अपरिवर्तनीय गारंटी',
+    invariantBody:
+      '“अज्ञात” को कभी असफल नहीं माना जाता। प्रोफ़ाइल में उत्तर न हो तो स्थिति हमेशा Missing info होती है।',
+    index: 'सूची और नेविगेशन',
+    presentationMode: 'प्रस्तुति मोड',
+    presentationOn: 'ऑफ़लाइन-सुरक्षित। कैश्ड बेंचमार्क परिणाम बिना नेटवर्क प्रस्तुति देते हैं।',
+    presentationOff: 'लाइव मोड। बैकएंड API और बाहरी सेवाओं से जुड़ता है।',
+    demoOn: 'डेमो मोड: चालू',
+    demoOff: 'डेमो मोड: बंद',
+    active: 'सक्रिय',
+    off: 'बंद',
+    colophon: 'SETU 2026 हैकाथॉन • समस्या कथन PS-03',
+    aesthetic: 'न्यूनतम संपादकीय शैली • कोई ग्रेडिएंट नहीं • कोई शैडो नहीं'
+  }
+};
+
+export default hi;

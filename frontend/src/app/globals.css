@@ -1,0 +1,349 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Theme tokens
+   Light (cream) is the default. `.dark` is applied to <html> by ThemeProvider.
+   ========================================================================== */
+:root {
+  --color-cream: #F1EEE6;
+  --color-ink: #111111;
+  --color-match: #2F7D5B;
+  --color-mismatch: #C0453A;
+  --color-missing: #D98A1F;
+
+  /* Semantic surface tokens used by body, selection and focus rings. */
+  --surface: #F1EEE6;
+  --on-surface: #111111;
+  --focus-ring: #111111;
+
+  /* Text inks. The palette's status colours are tuned as badge *fills*; as
+     text on the cream surface they fall below the 4.5:1 AA threshold, so the
+     text-safe variants below are used instead. Every one of them is >= 4.5:1
+     on its intended surface. */
+  --muted-ink: #595959;
+  --match-ink: #1E5C42;
+  --mismatch-ink: #9E2F26;
+  --missing-ink: #8A5806;
+
+  /* Ink for the inverted panel (black here, cream in the dark theme), so a
+     status colour keeps AA contrast whichever way the panel is pointing. */
+  --missing-ink-inverse: #F0B85C;
+}
+
+.dark {
+  /* Dark variant of the same editorial palette.
+     Status colours keep their meaning but are lightened so that, as badge
+     surfaces with near-black text, they clear WCAG AA (>= 4.5:1). */
+  --color-cream: #F1EEE6;
+  --color-ink: #111111;
+  --color-match: #5FC08D;
+  --color-mismatch: #F08A7A;
+  --color-missing: #F0B85C;
+
+  --dk-bg-rgb: 21 20 15;
+  --dk-surface-rgb: 33 31 25;
+  --dk-ink-rgb: 242 239 231;
+  --dk-on-accent-rgb: 21 20 15;
+  --dk-match-rgb: 95 192 141;
+  --dk-mismatch-rgb: 240 138 122;
+  --dk-missing-rgb: 240 184 92;
+  --dk-muted-rgb: 169 165 153;
+
+  --surface: rgb(var(--dk-bg-rgb));
+  --on-surface: rgb(var(--dk-ink-rgb));
+  --focus-ring: rgb(var(--dk-ink-rgb));
+
+  /* Lightened text inks so the same tokens clear AA on the dark surface. */
+  --muted-ink: #B9B5AA;
+  --match-ink: #7ED0A4;
+  --mismatch-ink: #F3A093;
+  --missing-ink: #F0C175;
+
+  /* The inverted panel is cream here, so its status ink goes dark. */
+  --missing-ink-inverse: #8A5806;
+
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--surface);
+  color: var(--on-surface);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .font-headline {
+  font-family: 'Archivo Black', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background-color: var(--on-surface);
+  color: var(--surface);
+}
+
+/* Editorial keyboard accessibility */
+:focus-visible {
+  outline: 2px solid var(--focus-ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Editorial borders: crisp, thin, no soft shadows */
+.editorial-border {
+  border: 1px solid var(--on-surface);
+}
+
+.editorial-divider {
+  border-top: 1px solid var(--on-surface);
+}
+
+/* ==========================================================================
+   Dark variant of the editorial palette
+   --------------------------------------------------------------------------
+   The palette is expressed as Tailwind hex utilities (~230 call sites), so the
+   dark theme remaps those exact tokens under `.dark` instead of rewriting every
+   component. Attribute selectors have the specificity of a class, and the
+   `.dark` ancestor adds one more, so these always beat the utilities.
+   ========================================================================== */
+.dark *,
+.dark *::before,
+.dark *::after {
+  --tw-ring-offset-color: rgb(var(--dk-bg-rgb));
+}
+
+/* Surfaces */
+.dark [class~="bg-[#F1EEE6]"] { background-color: rgb(var(--dk-bg-rgb)); }
+.dark [class~="bg-[#F1EEE6]/50"] { background-color: rgb(var(--dk-surface-rgb) / 0.5); }
+.dark [class~="bg-white"] { background-color: rgb(var(--dk-surface-rgb)); }
+.dark [class~="bg-white/40"] { background-color: rgb(var(--dk-ink-rgb) / 0.08); }
+.dark [class~="bg-[#111111]"] { background-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="bg-[#111111]/5"] { background-color: rgb(var(--dk-ink-rgb) / 0.05); }
+.dark [class~="bg-[#111111]/10"] { background-color: rgb(var(--dk-ink-rgb) / 0.1); }
+.dark [class~="bg-[#111111]/15"] { background-color: rgb(var(--dk-ink-rgb) / 0.15); }
+.dark [class~="bg-[#111111]/70"] { background-color: rgb(var(--dk-ink-rgb) / 0.7); }
+.dark [class~="bg-[#111111]/90"] { background-color: rgb(var(--dk-ink-rgb) / 0.9); }
+.dark [class~="bg-[#111111]/[0.02]"] { background-color: rgb(var(--dk-ink-rgb) / 0.04); }
+.dark [class~="bg-black"] { background-color: rgb(var(--dk-ink-rgb)); }
+
+/* Status surfaces — the accents flip to a light fill, so the text ink is set
+   at the end of this section to beat the `.text-[#111111]` remap below. */
+.dark [class~="bg-[#2F7D5B]"] { background-color: rgb(var(--dk-match-rgb)); }
+.dark [class~="bg-[#C0453A]"] { background-color: rgb(var(--dk-mismatch-rgb)); }
+.dark [class~="bg-[#D98A1F]"] { background-color: rgb(var(--dk-missing-rgb)); }
+
+/* Status tints */
+.dark [class~="bg-[#2F7D5B]/5"] { background-color: rgb(var(--dk-match-rgb) / 0.12); }
+.dark [class~="bg-[#2F7D5B]/10"] { background-color: rgb(var(--dk-match-rgb) / 0.18); }
+.dark [class~="bg-[#2F7D5B]/15"] { background-color: rgb(var(--dk-match-rgb) / 0.24); }
+.dark [class~="bg-[#2F7D5B]/30"] { background-color: rgb(var(--dk-match-rgb) / 0.3); }
+.dark [class~="bg-[#C0453A]/5"] { background-color: rgb(var(--dk-mismatch-rgb) / 0.12); }
+.dark [class~="bg-[#C0453A]/10"] { background-color: rgb(var(--dk-mismatch-rgb) / 0.18); }
+.dark [class~="bg-[#D98A1F]/5"] { background-color: rgb(var(--dk-missing-rgb) / 0.12); }
+.dark [class~="bg-[#D98A1F]/10"] { background-color: rgb(var(--dk-missing-rgb) / 0.18); }
+.dark [class~="bg-[#D98A1F]/15"] { background-color: rgb(var(--dk-missing-rgb) / 0.24); }
+
+/* Text */
+.dark [class~="text-[#111111]"] { color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="text-[#111111]/90"] { color: rgb(var(--dk-ink-rgb) / 0.9); }
+.dark [class~="text-[#111111]/85"] { color: rgb(var(--dk-ink-rgb) / 0.85); }
+.dark [class~="text-[#111111]/80"] { color: rgb(var(--dk-ink-rgb) / 0.8); }
+.dark [class~="text-[#111111]/75"] { color: rgb(var(--dk-ink-rgb) / 0.75); }
+/* .../70 down to .../40 are remapped by the contrast-safe ink rules below. */
+.dark [class~="text-[#F1EEE6]"] { color: rgb(var(--dk-on-accent-rgb)); }
+.dark [class~="text-[#F1EEE6]/80"] { color: rgb(var(--dk-on-accent-rgb) / 0.8); }
+.dark [class~="text-[#F1EEE6]/70"] { color: rgb(var(--dk-on-accent-rgb) / 0.7); }
+.dark [class~="text-[#F1EEE6]/60"] { color: rgb(var(--dk-on-accent-rgb) / 0.6); }
+.dark [class~="text-white"] { color: rgb(var(--dk-on-accent-rgb)); }
+.dark [class~="text-white/80"] { color: rgb(var(--dk-on-accent-rgb) / 0.8); }
+.dark [class~="text-white/70"] { color: rgb(var(--dk-on-accent-rgb) / 0.7); }
+/* Status inks and muted greys are remapped for both themes by the
+   contrast-safe ink rules at the end of this section. */
+
+/* Borders */
+.dark [class~="border-[#111111]"] { border-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="border-[#111111]/10"] { border-color: rgb(var(--dk-ink-rgb) / 0.1); }
+.dark [class~="border-[#111111]/15"] { border-color: rgb(var(--dk-ink-rgb) / 0.15); }
+.dark [class~="border-[#111111]/20"] { border-color: rgb(var(--dk-ink-rgb) / 0.2); }
+.dark [class~="border-[#111111]/25"] { border-color: rgb(var(--dk-ink-rgb) / 0.25); }
+.dark [class~="border-[#111111]/30"] { border-color: rgb(var(--dk-ink-rgb) / 0.3); }
+.dark [class~="border-[#111111]/40"] { border-color: rgb(var(--dk-ink-rgb) / 0.4); }
+.dark [class~="border-[#2F7D5B]"] { border-color: rgb(var(--dk-match-rgb)); }
+.dark [class~="border-[#C0453A]"] { border-color: rgb(var(--dk-mismatch-rgb)); }
+.dark [class~="border-[#D98A1F]"] { border-color: rgb(var(--dk-missing-rgb)); }
+.dark [class~="border-[#F1EEE6]/30"] { border-color: rgb(var(--dk-on-accent-rgb) / 0.3); }
+.dark [class~="border-[#F1EEE6]/40"] { border-color: rgb(var(--dk-on-accent-rgb) / 0.4); }
+.dark [class~="border-[#E5E0D4]"] { border-color: rgb(var(--dk-ink-rgb) / 0.2); }
+
+/* Row dividers (colour lands on the children, not the parent) */
+.dark [class~="divide-[#111111]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="divide-[#111111]/30"] > :not([hidden]) ~ :not([hidden]) { border-color: rgb(var(--dk-ink-rgb) / 0.3); }
+.dark [class~="divide-[#E5E0D4]"] > :not([hidden]) ~ :not([hidden]) { border-color: rgb(var(--dk-ink-rgb) / 0.2); }
+
+/* Rings and outlines */
+.dark [class~="ring-[#111111]"] { --tw-ring-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="ring-[#2F7D5B]"] { --tw-ring-color: rgb(var(--dk-match-rgb)); }
+.dark [class~="focus:ring-[#111111]"]:focus { --tw-ring-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="focus:ring-[#C0453A]"]:focus { --tw-ring-color: rgb(var(--dk-mismatch-rgb)); }
+.dark [class~="focus:outline-[#111111]"]:focus { outline-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="focus-visible:outline-[#111111]"]:focus-visible { outline-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="focus:border-[#111111]"]:focus { border-color: rgb(var(--dk-ink-rgb)); }
+
+/* Hover / active / disabled states */
+.dark [class~="hover:bg-[#111111]"]:hover { background-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="hover:bg-black"]:hover { background-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="hover:bg-[#111111]/5"]:hover { background-color: rgb(var(--dk-ink-rgb) / 0.05); }
+.dark [class~="hover:bg-[#111111]/10"]:hover { background-color: rgb(var(--dk-ink-rgb) / 0.1); }
+.dark [class~="hover:bg-[#111111]/90"]:hover { background-color: rgb(var(--dk-ink-rgb) / 0.9); }
+.dark [class~="hover:bg-[#E5E0D4]"]:hover { background-color: rgb(var(--dk-ink-rgb) / 0.12); }
+.dark [class~="hover:bg-[#256348]"]:hover { background-color: rgb(var(--dk-match-rgb)); }
+.dark [class~="hover:bg-[#A3382F]"]:hover { background-color: rgb(var(--dk-mismatch-rgb)); }
+.dark [class~="hover:bg-[#C0453A]"]:hover { background-color: rgb(var(--dk-mismatch-rgb)); }
+.dark [class~="hover:bg-[#C0453A]/10"]:hover { background-color: rgb(var(--dk-mismatch-rgb) / 0.18); }
+.dark [class~="hover:bg-[#D98A1F]/10"]:hover { background-color: rgb(var(--dk-missing-rgb) / 0.18); }
+.dark [class~="hover:text-white"]:hover { color: rgb(var(--dk-on-accent-rgb)); }
+.dark [class~="hover:text-[#F1EEE6]"]:hover { color: rgb(var(--dk-on-accent-rgb)); }
+.dark [class~="hover:text-[#111111]"]:hover { color: rgb(var(--dk-ink-rgb)); }
+/* hover:text-[#2F7D5B] / [#C0453A] / [#D98A1F] use the contrast-safe inks below. */
+.dark [class~="hover:border-[#111111]"]:hover { border-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="active:bg-[#111111]/90"]:active { background-color: rgb(var(--dk-ink-rgb) / 0.9); }
+.dark [class~="active:bg-[#8B2C24]"]:active { background-color: rgb(var(--dk-mismatch-rgb)); }
+.dark [class~="disabled:bg-[#111111]/5"]:disabled { background-color: rgb(var(--dk-ink-rgb) / 0.05); }
+
+/* Selection colours used on <body> */
+.dark [class~="selection:bg-[#111111]"]::selection { background-color: rgb(var(--dk-ink-rgb)); }
+.dark [class~="selection:text-[#F1EEE6]"]::selection { color: rgb(var(--dk-on-accent-rgb)); }
+
+/* ==========================================================================
+   Contrast-safe text inks (both themes)
+   --------------------------------------------------------------------------
+   Two families of utility fall below the 4.5:1 AA threshold once they are used
+   as text rather than as fills:
+     * an accent colour used as a text colour, and
+     * every muted grey (any ink opacity below 0.75).
+   These rules swap in the theme-aware inks defined at the top of the sheet.
+   They carry the same specificity as the utilities and come later in the file,
+   so they win in both the cream and the dark theme. The status *fills* are
+   untouched, so a badge still reads as a solid block of its own colour.
+   ========================================================================== */
+[class~="text-[#111111]/70"],
+[class~="text-[#111111]/60"],
+[class~="text-[#111111]/50"],
+[class~="text-[#111111]/45"],
+[class~="text-[#111111]/40"],
+[class~="text-[#777777]"],
+[class~="text-[#666666]"],
+[class~="text-[#555555]"],
+[class~="text-[#444444]"] {
+  color: var(--muted-ink);
+}
+
+[class~="text-[#2F7D5B]"],
+[class~="hover:text-[#2F7D5B]"]:hover {
+  color: var(--match-ink);
+}
+
+[class~="text-[#C0453A]"],
+[class~="hover:text-[#C0453A]"]:hover {
+  color: var(--mismatch-ink);
+}
+
+[class~="text-[#D98A1F]"],
+[class~="hover:text-[#D98A1F]"]:hover {
+  color: var(--missing-ink);
+}
+
+/* On the inverted panel the surface inks are the wrong way round, so a status
+   colour sitting inside it uses the panel-safe ink instead (see the
+   `--missing-ink-inverse` token). The descendant selector outranks the plain
+   utility rule above in both themes. */
+[class~="bg-[#111111]"] [class~="text-[#D98A1F]"],
+[class~="bg-black"] [class~="text-[#D98A1F]"] {
+  color: var(--missing-ink-inverse);
+}
+
+/* Accent fills are light in the dark theme, so their text stays near-black even
+   though `.text-[#111111]` is remapped to cream by the Text rules above. */
+.dark [class~="bg-[#2F7D5B]"],
+.dark [class~="bg-[#C0453A]"],
+.dark [class~="bg-[#D98A1F]"] {
+  color: rgb(var(--dk-on-accent-rgb));
+}
+
+/* ==========================================================================
+   Accessibility helpers
+   ========================================================================== */
+
+/* Keyboard-only "skip to content" affordance. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--on-surface);
+  color: var(--surface);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+/* Screen-reader-only text: available to assistive tech, invisible on screen. */
+.sr-only-editorial {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Respect users who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styling for PDF export */
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .editorial-border {
+    border: 1px solid #000000 !important;
+  }
+  /* The printed page is always light, whatever the on-screen theme. */
+  .dark {
+    --dk-bg-rgb: 255 255 255;
+    --dk-surface-rgb: 255 255 255;
+    --dk-ink-rgb: 0 0 0;
+  }
+}
