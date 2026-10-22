@@ -70,22 +70,27 @@ export class SupabaseEvidenceStore implements ServerEvidenceStore {
     return (data as EvidenceVersionRow[] | null)?.map(fromVersionRow) ?? [];
   }
 
-  async getSince(userId: string, cursor: string | null): Promise<SyncPage> {
+  async getSince(userId: string, cursor: string | null, options?: { limit?: number }): Promise<SyncPage> {
     const after = parseCursor(cursor);
-    const { data, error } = await this.client
+    const limit = options?.limit && options.limit > 0 ? options.limit : undefined;
+    let query = this.client
       .from('evidence_versions')
       .select('*')
       .eq('user_id', userId)
       .gt('server_seq', after)
       .order('server_seq', { ascending: true });
+    if (limit) query = query.limit(limit + 1);
 
+    const { data, error } = await query;
     if (error) throw new EvidenceStoreError(`Could not page evidence: ${error.message}`);
     const rows = (data as EvidenceVersionRow[] | null) ?? [];
-    const records = rows.map(fromVersionRow);
-    const last = rows[rows.length - 1];
+    const hasMore = Boolean(limit && rows.length > limit);
+    const page = hasMore ? rows.slice(0, limit) : rows;
+    const last = page[page.length - 1];
     return {
-      records,
-      nextCursor: last ? String(last.server_seq) : String(after)
+      records: page.map(fromVersionRow),
+      nextCursor: last ? String(last.server_seq) : String(after),
+      hasMore
     };
   }
 

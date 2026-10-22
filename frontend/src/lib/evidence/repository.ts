@@ -9,7 +9,8 @@ import {
   type CreateEvidenceInput,
   type EvidenceRecord,
   type RejectEvidenceInput,
-  type ReviseEvidenceInput
+  type ReviseEvidenceInput,
+  type SyncOutboxOp
 } from '@opportunity-kit/shared';
 import { EvidenceDatabase, evidenceKey, type EvidenceKey, type OutboxEntry, type OutboxOperation } from './db';
 import { withStorageErrors } from './errors';
@@ -45,6 +46,8 @@ export type EvidenceListener = (event: EvidenceChangeEvent) => void;
 
 export interface SyncInfo {
   serverSeq?: number;
+  /** Per-operation server_seq from a push response. */
+  seqByOpId?: Record<string, number>;
   cursor?: string;
   at?: Date;
 }
@@ -330,7 +333,8 @@ export class EvidenceStore {
           if (!entry) continue;
 
           const changes: Partial<EvidenceRecord> = { syncState: 'synced' };
-          if (info.serverSeq !== undefined) changes.serverSeq = info.serverSeq;
+          const seq = info.seqByOpId?.[opId] ?? info.serverSeq;
+          if (seq !== undefined) changes.serverSeq = seq;
           await this.db.evidence.update(evidenceKey(entry.record), changes);
           await this.db.outbox.delete(opId);
           count += 1;
@@ -341,6 +345,58 @@ export class EvidenceStore {
     );
 
     if (count > 0) this.emit({ type: 'sync', count });
+    return count;
+  }
+
+  async getSyncCursor(): Promise<string | null> {
+    const value = await this.getMetaValue(META_LAST_SYNC_CURSOR);
+    return typeof value === 'string' && value ? value : null;
+  }
+
+  /** Inserts pulled/merged versions without queueing a new outbox row. */
+  async applyRemoteRecords(records: EvidenceRecord[]): Promise<number> {
+    if (records.length === 0) return 0;
+    await withStorageErrors(() =>
+      this.db.transaction('rw', this.db.evidence, async () => {
+        await this.db.evidence.bulkPut(records.map((record) => ({ ...record, syncState: 'synced' as const })));
+      })
+    );
+    this.emit({ type: 'sync', count: records.length });
+    return records.length;
+  }
+
+  /** After a merge, the outbox is exactly the ops that still need a push. */
+  async replaceOutbox(ops: SyncOutboxOp[]): Promise<void> {
+    await withStorageErrors(() =>
+      this.db.transaction('rw', this.db.outbox, async () => {
+        await this.db.outbox.clear();
+        if (ops.length === 0) return;
+        await this.db.outbox.bulkPut(
+          ops.map((item) => ({
+            opId: item.opId,
+            operation: item.operation === 'delete' ? 'delete' : item.operation,
+            evidenceId: item.evidenceId,
+            record: item.record,
+            baseVersion: item.baseVersion,
+            createdAt: item.createdAt
+          }))
+        );
+      })
+    );
+  }
+
+  async countConflicted(): Promise<number> {
+    const rows = await this.listAll();
+    const byId = new Map<string, EvidenceRecord[]>();
+    for (const row of rows) {
+      const list = byId.get(row.evidenceId);
+      if (list) list.push(row);
+      else byId.set(row.evidenceId, [row]);
+    }
+    let count = 0;
+    for (const versions of byId.values()) {
+      if (currentVersion(versions).status === 'conflicted') count += 1;
+    }
     return count;
   }
 

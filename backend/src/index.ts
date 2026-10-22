@@ -21,6 +21,9 @@ import {
 } from './lib/agents/index.js';
 import { checkOpportunityScam } from './lib/agents/scamChecker.js';
 import { gatewayRegistry, askAgentLLM, getAgentMetrics } from './lib/llm/index.js';
+import { createServerEvidenceStore } from './store/index.js';
+import { createSyncRouter } from './sync/routes.js';
+import { verifySupabaseToken } from './sync/auth.js';
 
 dotenv.config();
 
@@ -83,38 +86,16 @@ function checkIpRateLimit(ip: string, limit: number = 30, windowMs: number = 600
   return true;
 }
 
-// Supabase login-token verification
-async function verifySupabaseToken(token: string): Promise<{ id: string; email?: string } | null> {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) {
-    // If Supabase not configured in env, allow decoding JWT payload without verification
-    try {
-      const parts = token.split('.');
-      if (parts.length === 3) {
-        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-        return { id: payload.sub || 'user-guest', email: payload.email };
-      }
-    } catch {
-      return null;
-    }
-    return null;
-  }
+const evidenceStore = createServerEvidenceStore();
 
-  try {
-    const res = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/auth/v1/user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        apikey: supabaseAnonKey
-      }
-    });
-    if (!res.ok) return null;
-    const user: any = await res.json();
-    return { id: user.id, email: user.email };
-  } catch {
-    return null;
-  }
-}
+app.use(
+  '/api/sync',
+  createSyncRouter({
+    store: evidenceStore,
+    verifyToken: verifySupabaseToken,
+    rateLimit: (ip) => checkIpRateLimit(ip, 60)
+  })
+);
 
 // 1. Health & Status endpoints (both /health and /api/health for Render and keep-alive compatibility)
 const healthHandler = (_req: express.Request, res: express.Response) => {

@@ -190,6 +190,7 @@ class FakeQuery {
   private sortKey: string | null = null;
   private pendingInsert: Row | null = null;
   private mode: 'many' | 'single' | 'maybe' = 'many';
+  private take: number | null = null;
 
   constructor(
     private readonly tables: Map<string, Row[]>,
@@ -213,6 +214,11 @@ class FakeQuery {
 
   gt(column: string, value: unknown): this {
     this.filters.push((row) => Number(row[column]) > Number(value));
+    return this;
+  }
+
+  limit(count: number): this {
+    this.take = count;
     return this;
   }
 
@@ -305,6 +311,7 @@ class FakeQuery {
           : String(bv).localeCompare(String(av));
       });
     }
+    if (this.take !== null) rows = rows.slice(0, this.take);
     if (this.mode === 'single') {
       return Promise.resolve({ data: rows[0] ?? null, error: rows[0] ? null : { message: 'not found' } });
     }

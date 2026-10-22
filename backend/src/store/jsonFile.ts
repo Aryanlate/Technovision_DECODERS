@@ -35,9 +35,9 @@ export class JsonFileEvidenceStore implements ServerEvidenceStore {
     return this.memory.getCurrent(userId, evidenceId);
   }
 
-  async getSince(userId: string, cursor: string | null): Promise<SyncPage> {
+  async getSince(userId: string, cursor: string | null, options?: { limit?: number }): Promise<SyncPage> {
     await this.ready;
-    return this.memory.getSince(userId, cursor);
+    return this.memory.getSince(userId, cursor, options);
   }
 
   async hasOp(userId: string, opId: string): Promise<boolean> {

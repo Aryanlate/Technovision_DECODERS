@@ -16,7 +16,7 @@ import type { EvidenceRecord } from '@opportunity-kit/shared';
 export const EVIDENCE_DB_NAME = 'opportunitykit_evidence';
 
 /** Change kinds queued in the outbox. */
-export type OutboxOperation = 'add' | 'revise' | 'confirm' | 'reject';
+export type OutboxOperation = 'add' | 'revise' | 'confirm' | 'reject' | 'delete';
 
 export interface OutboxEntry {
   /** Same id as the record version it queued, so one op maps to one version. */

@@ -92,16 +92,18 @@ export class MemoryEvidenceStore implements ServerEvidenceStore {
       .map((row) => cloneRecord(fromVersionRow(row)));
   }
 
-  async getSince(userId: string, cursor: string | null): Promise<SyncPage> {
+  async getSince(userId: string, cursor: string | null, options?: { limit?: number }): Promise<SyncPage> {
     const after = parseCursor(cursor);
     const rows = this.versions
       .filter((row) => row.user_id === userId && row.server_seq > after)
       .sort((a, b) => a.server_seq - b.server_seq);
-    const records = rows.map((row) => cloneRecord(fromVersionRow(row)));
-    const last = rows[rows.length - 1];
+    const limit = options?.limit && options.limit > 0 ? options.limit : rows.length;
+    const page = rows.slice(0, limit);
+    const last = page[page.length - 1];
     return {
-      records,
-      nextCursor: last ? String(last.server_seq) : String(after)
+      records: page.map((row) => cloneRecord(fromVersionRow(row))),
+      nextCursor: last ? String(last.server_seq) : String(after),
+      hasMore: rows.length > page.length
     };
   }
 
