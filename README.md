@@ -130,6 +130,13 @@ npm run dev
 - **Backend API:** [http://localhost:5000](http://localhost:5000)
 - **Styleguide Route:** [http://localhost:3000/styleguide](http://localhost:3000/styleguide)
 
+### 6. Server evidence store (local vs Supabase)
+
+The backend keeps every student/opportunity fact as versioned, append-only rows (`backend/src/store`). Writes never update or delete history.
+
+- **With Supabase:** set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `backend/.env` (service role key is server-side only). Apply `backend/migrations/001_evidence.sql` in the Supabase SQL editor — see `DEPLOY.md`.
+- **Without Supabase (local default):** the same store interface writes `backend/data/evidence.json`. This is fine for `npm run dev`. **It is not persistent on Render’s free disk** (the filesystem is wiped when the free instance sleeps or is rebuilt). Production sync should use Supabase, not the JSON file.
+
 ### 5. Build for Production
 ```bash
 npm run build

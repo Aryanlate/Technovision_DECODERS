@@ -75,7 +75,9 @@ In the Render dashboard, navigate to **Environment** and add the following envir
 | `FEATURE_ACTION_PLAN` | No | `true` | Feature flag: Action plan next steps generator. |
 | `FEATURE_LIVE_LLM` | No | `true` | Feature flag: Allow fallback to live LLM gateway. |
 | `SUPABASE_URL` | Optional | `https://xyzcompany.supabase.co` | Supabase backend connection URL. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Optional | `eyJ...` | Supabase secret service-role key (server-side only). |
+| `SUPABASE_SERVICE_ROLE_KEY` | Optional | `eyJ...` | Supabase secret service-role key (server-side only; never `NEXT_PUBLIC_`). |
+| `EVIDENCE_STORE` | Optional | *(unset)* or `json` | Unset uses Supabase when the keys above are set. `json` forces the local file store. |
+| `EVIDENCE_STORE_PATH` | Optional | `data/evidence.json` | Path for the local JSON evidence file. **Not durable on Render free disk.** |
 
 ---
 
@@ -121,7 +123,7 @@ In Vercel **Project Settings** → **Environment Variables**, configure:
 
 ---
 
-## 4. Supabase Configuration (Authentication & Redirect URLs)
+## 4. Supabase Configuration (Authentication, Redirect URLs & Evidence Migration)
 
 If using Supabase Authentication & Sync:
 1. Open the [Supabase Dashboard](https://supabase.com/dashboard) and select your project.
@@ -135,6 +137,26 @@ If using Supabase Authentication & Sync:
    - Local Development: `http://localhost:3000/**`
    - Preview Deployments (wildcard): `https://*-<your-vercel-team>.vercel.app/**`
 5. Click **Save Changes**.
+
+### 4.1 Evidence store SQL migration
+
+The server evidence store is append-only Postgres: `evidence_versions` (primary key `evidence_id` + `version`), `sync_ops` (idempotent `op_id`), and the `evidence_current` view (highest version per evidence id). Row level security limits each user to their own rows. The backend never updates or deletes version rows.
+
+1. Open **Supabase Dashboard** → **SQL Editor** → **New query**.
+2. Paste the contents of `backend/migrations/001_evidence.sql` and run it.
+3. Confirm the tables exist under **Table Editor**: `evidence_versions`, `sync_ops`, and the view `evidence_current`.
+4. On **Render** (backend only), set:
+   - `SUPABASE_URL` — project URL
+   - `SUPABASE_SERVICE_ROLE_KEY` — **service role** key (server-side only; never add this to Vercel or any `NEXT_PUBLIC_*` variable)
+5. Leave `EVIDENCE_STORE` unset so the backend uses Supabase. Set `EVIDENCE_STORE=json` only for local development without a project.
+6. Optional re-run: the migration uses `IF NOT EXISTS` / `CREATE OR REPLACE`, so applying it again is safe.
+
+> [!IMPORTANT]
+> Do not put `SUPABASE_SERVICE_ROLE_KEY` in the frontend. The browser uses the anon key; the Express process uses the service role key to write evidence on behalf of sync routes.
+
+### 4.2 Local JSON fallback (not durable)
+
+Without `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`, the backend writes `backend/data/evidence.json` (or `EVIDENCE_STORE_PATH`). That file is for local development only. **Render’s free disk is not persistent** — it is cleared when the free instance sleeps or is rebuilt — so do not rely on the JSON file in production.
 
 ---
 
@@ -206,6 +228,7 @@ Print or review this checklist before submitting or presenting:
 - [ ] **Vercel API URL Configured:** `NEXT_PUBLIC_API_URL` points to live Render service HTTPS URL.
 - [ ] **Vercel Redeployed After Env Changes:** Triggered fresh deployment after saving `NEXT_PUBLIC_*` variables.
 - [ ] **Supabase Redirect URLs:** Vercel production URL and `http://localhost:3000` added to allowed redirects.
+- [ ] **Evidence migration applied:** `backend/migrations/001_evidence.sql` run in the Supabase SQL editor; `SUPABASE_SERVICE_ROLE_KEY` set on Render only.
 - [ ] **Wake Script Verified:** `npm run wake -- <backend-url>` reports `✓ BACKEND IS AWAKE AND HEALTHY!`.
 - [ ] **Smoke Test Verified:** `npm run smoke -- <frontend-url> <backend-url>` passes all 5 tests.
 - [ ] **Demo Week Instance Plan:** Reviewed Render instance hours and considered Starter instance for zero cold boot latency.
