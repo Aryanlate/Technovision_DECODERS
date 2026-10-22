@@ -1,4 +1,12 @@
-import { fnv1aHash, type CreateEvidenceInput, type EvidenceRecord } from '@opportunity-kit/shared';
+import {
+  fnv1aHash,
+  profileEvidenceFromProfile,
+  requirementEvidenceFromRequirements,
+  type CreateEvidenceInput,
+  type EvidenceRecord,
+  type Requirement,
+  type StudentProfile
+} from '@opportunity-kit/shared';
 import { CHECKLIST_KEY, PROFILE_KEY } from '../storage';
 import { TRACKER_KEY } from '../trackerStore';
 
@@ -49,9 +57,6 @@ export interface EvidenceMigrationTarget {
 
 const MIGRATED_SENTENCE = 'Imported from the data already saved on this device before evidence records existed.';
 
-const PROFILE_FIELDS = ['name', 'year', 'branch', 'cgpa', 'availabilityWeeks'] as const;
-const LINK_FIELDS = ['github', 'linkedin', 'instagram', 'portfolio'] as const;
-
 /** Returns localStorage, or null when the browser blocks it. */
 export function detectLocalStorage(): KeyValueStore | null {
   try {
@@ -100,63 +105,42 @@ function migratedRecord(
   };
 }
 
-/** Profile scalars, skills, links and projects as student_confirmed evidence. */
+/** A version-1 input for a record the shared adapters already built. */
+function toCreateInput(record: EvidenceRecord): CreateEvidenceInput {
+  return {
+    evidenceId: record.evidenceId,
+    subjectType: record.subjectType,
+    subjectId: record.subjectId,
+    kind: record.kind,
+    key: record.key,
+    value: record.value,
+    origin: record.origin,
+    trust: record.trust,
+    source: record.source,
+    observedAt: record.observedAt,
+    validUntil: record.validUntil
+  };
+}
+
+/**
+ * The saved profile as student_confirmed evidence.
+ *
+ * The shared adapter is reused, so a migrated fact gets exactly the same
+ * evidenceId and key as every later save. That makes it visible to the
+ * evaluator straight away, and the first save of an unchanged profile appends
+ * nothing because the content hash already matches.
+ */
 function profileEvidence(profile: Record<string, unknown>): CreateEvidenceInput[] {
-  const subjectId = `profile:${isPresent(profile.id) ? String(profile.id) : 'local'}`;
-  const inputs: CreateEvidenceInput[] = [];
-  const add = (kind: string, key: string, value: unknown) =>
-    inputs.push(
-      migratedRecord(PROFILE_KEY, {
-        subjectType: 'profile',
-        subjectId,
-        kind,
-        key,
-        value,
-        origin: 'student_confirmed'
-      })
-    );
-
-  for (const field of PROFILE_FIELDS) {
-    if (isPresent(profile[field])) add('profile_field', field, profile[field]);
-  }
-
-  if (Array.isArray(profile.skills)) {
-    for (const skill of profile.skills) {
-      if (isPresent(skill)) add('skill', `skill.${String(skill)}`, skill);
-    }
-  }
-
-  if (isRecord(profile.links)) {
-    for (const field of LINK_FIELDS) {
-      if (isPresent(profile.links[field])) add('link', `link.${field}`, profile.links[field]);
-    }
-  }
-
-  if (Array.isArray(profile.projects)) {
-    profile.projects.forEach((project, index) => {
-      if (!isRecord(project)) return;
-      const id = isPresent(project.id) ? project.id : isPresent(project.title) ? project.title : `project-${index + 1}`;
-      add('project', `project.${String(id)}`, project);
-    });
-  }
-
-  return inputs;
+  return profileEvidenceFromProfile(profile as unknown as StudentProfile).map(toCreateInput);
 }
 
 /** The parsed checklist as user_provided evidence about one opportunity. */
 function checklistEvidence(checklist: Record<string, unknown>): CreateEvidenceInput[] {
-  const title = isPresent(checklist.title) ? String(checklist.title) : 'untitled';
-  const subjectId = `opportunity:${fnv1aHash(title)}`;
-  return [
-    migratedRecord(CHECKLIST_KEY, {
-      subjectType: 'opportunity',
-      subjectId,
-      kind: 'opportunity_checklist',
-      key: 'checklist',
-      value: checklist,
-      origin: 'user_provided'
-    })
-  ];
+  const requirements = Array.isArray(checklist.requirements) ? checklist.requirements : [];
+  if (requirements.length === 0) return [];
+
+  const title = isPresent(checklist.title) ? String(checklist.title) : 'opportunity';
+  return requirementEvidenceFromRequirements(requirements as Requirement[], title).map(toCreateInput);
 }
 
 /** Each tracked opportunity as user_provided evidence. */

@@ -8,6 +8,8 @@ import {
   SAMPLE_STUDENT_PROFILE
 } from '@opportunity-kit/shared';
 import { loadProfile, saveProfile, resetProfileToSample } from '../../lib/storage';
+import { getEvidenceStore } from '../../lib/evidence/repository';
+import { syncProfileEvidence } from '../../lib/evidence/bridge';
 import {
   Card,
   CardHeader,
@@ -281,6 +283,13 @@ export default function ProfilePage() {
         .catch((err) => {
           console.warn('[Profile] Auto-save error:', err);
         });
+
+      // The same facts are recorded as append-only evidence versions: the first
+      // save creates version 1, every later edit appends version n+1. Forms,
+      // project cards and links all flow through this one effect.
+      syncProfileEvidence(getEvidenceStore(), profile).catch((err) =>
+        console.warn('[Evidence] profile write failed:', err)
+      );
     }, 400);
 
     return () => clearTimeout(timer);

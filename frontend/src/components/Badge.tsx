@@ -16,7 +16,11 @@ export type BadgeStatus =
   | 'Low risk'
   | 'Medium risk'
   | 'High risk'
-  | 'AI-suggested';
+  | 'AI-suggested'
+  | 'Confirmed by you'
+  | 'Verified source'
+  | 'Stale'
+  | 'Conflict';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   status: BadgeStatus;
@@ -36,7 +40,11 @@ const STATUS_I18N_KEY: Record<string, string> = {
   'Low risk': 'lowRisk',
   'Medium risk': 'mediumRisk',
   'High risk': 'highRisk',
-  'AI-suggested': 'aiSuggested'
+  'AI-suggested': 'aiSuggested',
+  'Confirmed by you': 'confirmedByYou',
+  'Verified source': 'verifiedSource',
+  Stale: 'stale',
+  Conflict: 'conflict'
 };
 
 /**
@@ -234,6 +242,79 @@ export const Badge: React.FC<BadgeProps> = ({
               aria-hidden="true"
             >
               <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15.5l-1.8-4.7L5.5 9l4.7-1.3z" />
+            </svg>
+          )
+        };
+      case 'Confirmed by you':
+        return {
+          bg: 'bg-[#2F7D5B]',
+          text: 'text-white',
+          label: 'CONFIRMED BY YOU',
+          icon: (
+            <svg
+              className="w-3.5 h-3.5 stroke-[2.5]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+              <polyline points="9 12 11 14 15 10" />
+            </svg>
+          )
+        };
+      case 'Verified source':
+        return {
+          bg: 'bg-white',
+          text: 'text-[#111111]',
+          label: 'VERIFIED SOURCE',
+          icon: (
+            <svg
+              className="w-3.5 h-3.5 stroke-[2.5]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18" />
+            </svg>
+          )
+        };
+      case 'Stale':
+        return {
+          bg: 'bg-[#D98A1F]',
+          text: 'text-[#111111]',
+          label: 'STALE',
+          icon: (
+            <svg
+              className="w-3.5 h-3.5 stroke-[2.5]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <polyline points="12 7 12 12 15.5 14" />
+            </svg>
+          )
+        };
+      case 'Conflict':
+        return {
+          bg: 'bg-[#C0453A]',
+          text: 'text-white',
+          label: 'CONFLICT',
+          icon: (
+            <svg
+              className="w-3.5 h-3.5 stroke-[2.5]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M12 3l9 16H3l9-16z" />
+              <line x1="12" y1="9" x2="12" y2="14" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
           )
         };

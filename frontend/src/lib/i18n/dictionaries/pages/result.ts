@@ -108,6 +108,32 @@ const en: Dictionary = {
       defaultNextStep: 'Provide this information to verify eligibility instantly.'
     },
 
+    why: {
+      open: 'Why?',
+      close: 'Close',
+      title: 'Why this result',
+      supporting: 'Supporting evidence',
+      excluded: 'Excluded evidence',
+      noSupporting: 'No confirmed evidence yet.',
+      noExcluded: 'Nothing was left out.',
+      evidenceId: 'ID',
+      versionLabel: 'v{version}',
+      originLabel: 'Origin',
+      trustLabel: 'Trust',
+      sourceLabel: 'Source',
+      recordedLabel: 'Recorded',
+      noSource: 'No source link or sentence',
+      reasonLabel: 'Reason',
+      actions: {
+        confirm: 'Confirm',
+        refresh: 'Refresh',
+        resolve: 'Resolve'
+      },
+      confirmHint: 'Confirm this suggestion so it counts as your own fact.',
+      refreshHint: 'Re-check this fact to reset how fresh it is.',
+      resolveHint: 'Pick the value that counts to clear the conflict.'
+    },
+
     placeholder: {
       link: 'https://github.com/username or portfolio',
       weeks: 'Weeks (e.g. 8)',
@@ -342,6 +368,32 @@ const hi: Dictionary = {
       defaultNextStep: 'पात्रता तुरंत सत्यापित करने के लिए यह जानकारी दें।'
     },
 
+    why: {
+      open: 'क्यों?',
+      close: 'बंद करें',
+      title: 'यह परिणाम क्यों',
+      supporting: 'समर्थन देने वाले प्रमाण',
+      excluded: 'बाहर रखे गए प्रमाण',
+      noSupporting: 'अभी कोई पुष्ट प्रमाण नहीं।',
+      noExcluded: 'कुछ भी बाहर नहीं रखा गया।',
+      evidenceId: 'आईडी',
+      versionLabel: 'v{version}',
+      originLabel: 'स्रोत प्रकार',
+      trustLabel: 'विश्वास',
+      sourceLabel: 'स्रोत',
+      recordedLabel: 'दर्ज',
+      noSource: 'कोई स्रोत लिंक या वाक्य नहीं',
+      reasonLabel: 'कारण',
+      actions: {
+        confirm: 'पुष्टि करें',
+        refresh: 'ताज़ा करें',
+        resolve: 'सुलझाएँ'
+      },
+      confirmHint: 'इस सुझाव की पुष्टि करें ताकि यह आपके अपने तथ्य के रूप में गिना जाए।',
+      refreshHint: 'इस तथ्य की नई जाँच करें ताकि इसकी ताज़गी रीसेट हो जाए।',
+      resolveHint: 'टकराव हटाने के लिए वह मान चुनें जो गिना जाएगा।'
+    },
+
     placeholder: {
       link: 'https://github.com/username या पोर्टफ़ोलियो',
       weeks: 'सप्ताह (जैसे 8)',
@@ -574,7 +626,33 @@ const mr: Dictionary = {
       assumeFix: 'मी हे दुरुस्त करीन असे गृहीत धरा',
       whatIfNotSaved: 'काय-जर, जतन केलेले नाही',
       quickFix: 'झटपट दुरुस्ती:',
-      defaultNextStep: 'पात्रता त्वरित सत्यापित करण्यासाठी ही माहिती द्या.'
+      defaultNextStep: 'पात्रता त्वरित सत्यापित करण्यासाठी ही माहिती द्या।'
+    },
+
+    why: {
+      open: 'का?',
+      close: 'बंद करा',
+      title: 'हा निकाल का',
+      supporting: 'आधार देणारा पुरावा',
+      excluded: 'वगळलेला पुरावा',
+      noSupporting: 'अजून कोणताही पुष्ट पुरावा नाही.',
+      noExcluded: 'काहीही वगळले गेले नाही.',
+      evidenceId: 'आयडी',
+      versionLabel: 'v{version}',
+      originLabel: 'स्रोत प्रकार',
+      trustLabel: 'विश्वास',
+      sourceLabel: 'स्रोत',
+      recordedLabel: 'नोंद',
+      noSource: 'स्रोत लिंक किंवा वाक्य नाही',
+      reasonLabel: 'कारण',
+      actions: {
+        confirm: 'पुष्टी करा',
+        refresh: 'ताजे करा',
+        resolve: 'निकाली काढा'
+      },
+      confirmHint: 'या सूचनेची पुष्टी करा म्हणजे ती तुमची स्वतःची वस्तुस्थिती म्हणून मोजली जाईल.',
+      refreshHint: 'ही वस्तुस्थिती पुन्हा तपासा म्हणजे तिचा ताजेपणा रीसेट होईल.',
+      resolveHint: 'संघर्ष मिटवण्यासाठी मोजले जाणारे मूल्य निवडा.'
     },
 
     placeholder: {

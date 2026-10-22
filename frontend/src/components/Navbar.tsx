@@ -20,6 +20,7 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: 'nav.profile', href: '/profile' },
   { labelKey: 'nav.discover', href: '/discover' },
   { labelKey: 'nav.tracker', href: '/tracker' },
+  { labelKey: 'nav.evidence', href: '/evidence' },
   { labelKey: 'nav.college', href: '/college', badge: '120 BATCH' },
   { labelKey: 'nav.pricing', href: '/pricing' },
   { labelKey: 'nav.privacy', href: '/privacy' },

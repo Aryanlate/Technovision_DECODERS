@@ -19,7 +19,7 @@ const PROFILE_JSON = JSON.stringify({
 const CHECKLIST_JSON = JSON.stringify({
   opportunityType: 'internship',
   title: 'Summer Intern',
-  requirements: [{ id: 'r1', label: 'Year' }],
+  requirements: [{ id: 'r1', label: 'Year', kind: 'year' }],
   sources: []
 });
 const TRACKER_JSON = JSON.stringify([{ id: 't1', title: 'Summer Intern', status: 'Interested' }]);
@@ -263,21 +263,37 @@ describe('local evidence store: migration', () => {
     });
     await local.migrate({ storage });
 
-    const profile = await local.getCurrent('profile:p1');
-    expect(profile.length).toBeGreaterThan(0);
+    // The profile lands under the same evidence ids the pages use later.
+    const profile = await local.getCurrent('p1');
+    expect(profile).toHaveLength(13);
     expect(profile.every((record) => record.origin === 'student_confirmed')).toBe(true);
     expect(profile.every((record) => record.trust === 'verified')).toBe(true);
     expect(profile.every((record) => record.subjectType === 'profile')).toBe(true);
     expect(profile.map((record) => record.key).sort()).toEqual(
-      ['branch', 'cgpa', 'name', 'project.pr1', 'skill.CSS', 'skill.HTML', 'year'].sort()
+      [
+        'availabilityWeeks',
+        'branch',
+        'cgpa',
+        'documents',
+        'githubUrl',
+        'hasResume',
+        'links',
+        'name',
+        'portfolioUrl',
+        'projects',
+        'resumeUrl',
+        'skills',
+        'year'
+      ].sort()
     );
 
-    const checklists = await local.db.evidence.where('kind').equals('opportunity_checklist').toArray();
-    expect(checklists).toHaveLength(1);
-    expect(checklists[0].origin).toBe('user_provided');
-    expect(checklists[0].subjectType).toBe('opportunity');
-    expect(checklists[0].trust).toBe('needs_review');
-    expect(checklists[0].value).toEqual(JSON.parse(CHECKLIST_JSON));
+    const requirements = await local.getCurrent('Summer Intern');
+    expect(requirements).toHaveLength(1);
+    expect(requirements[0].origin).toBe('user_provided');
+    expect(requirements[0].subjectType).toBe('opportunity');
+    expect(requirements[0].kind).toBe('year');
+    expect(requirements[0].key).toBe('r1');
+    expect(requirements[0].value).toEqual({ id: 'r1', label: 'Year', kind: 'year' });
 
     const tracked = await local.db.evidence.where('kind').equals('tracker_item').toArray();
     expect(tracked).toHaveLength(1);

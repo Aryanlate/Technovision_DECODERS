@@ -14,6 +14,7 @@ import home from './dictionaries/pages/home';
 import check from './dictionaries/pages/check';
 import profile from './dictionaries/pages/profile';
 import result from './dictionaries/pages/result';
+import evidence from './dictionaries/pages/evidence';
 import tracker from './dictionaries/pages/tracker';
 import pricing from './dictionaries/pages/pricing';
 import features from './dictionaries/features';
@@ -28,7 +29,7 @@ export * from './types';
  * so it replaces the shared dictionary for those keys instead of merging into
  * it. That keeps a single source of truth per screen.
  */
-const MODULES = [components, home, check, profile, result, tracker, pricing, features];
+const MODULES = [components, home, check, profile, result, evidence, tracker, pricing, features];
 const BASE: Record<Locale, Dictionary> = { en, hi, mr };
 
 function buildDictionary(locale: Locale): Dictionary {

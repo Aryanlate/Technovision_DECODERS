@@ -14,7 +14,6 @@ import {
   SAMPLE_OPPORTUNITIES,
   detectOpportunityType,
   parseOpportunityToChecklist,
-  evaluateProfileAgainstOpportunity,
   AgentSuggestion,
   AgentProgressEvent
 } from '@opportunity-kit/shared';
@@ -24,9 +23,14 @@ import {
   getStoredProfile,
   saveStoredProfile,
   getStoredChecklist,
-  saveStoredChecklist,
-  saveStoredEvaluation
+  saveStoredChecklist
 } from '../../lib/storage';
+import { getEvidenceStore } from '../../lib/evidence/repository';
+import {
+  syncAllEvidence,
+  syncChecklistEvidence,
+  syncProfileEvidence
+} from '../../lib/evidence/bridge';
 import { wakeBackend, runAgentOrchestration, BackendConnectionStatus } from '../../lib/api';
 import { SectionTitle } from '../../components/SectionTitle';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/Card';
@@ -97,6 +101,24 @@ export default function CheckPage() {
     sourceSentence: ''
   });
 
+  // Every save keeps the familiar localStorage copy, and additionally records
+  // the same facts as append-only evidence versions: the first write creates
+  // version 1, every later edit appends version n+1. Nothing is overwritten, so
+  // the result page can recompute eligibility from the stored records.
+  const persistChecklist = (updated: Checklist) => {
+    saveStoredChecklist(updated);
+    syncChecklistEvidence(getEvidenceStore(), updated).catch((err) =>
+      console.warn('[Evidence] checklist write failed:', err)
+    );
+  };
+
+  const persistProfile = (updated: StudentProfile) => {
+    saveStoredProfile(updated);
+    syncProfileEvidence(getEvidenceStore(), updated).catch((err) =>
+      console.warn('[Evidence] profile write failed:', err)
+    );
+  };
+
   // 1. Initial Load: wake backend, check stored profile and parse initial text
   useEffect(() => {
     // Wake backend on page load to spin up cold Render free-tier instance
@@ -160,7 +182,7 @@ export default function CheckPage() {
     };
 
     setChecklist(updatedChecklist);
-    saveStoredChecklist(updatedChecklist);
+    persistChecklist(updatedChecklist);
   };
 
   const handleTextChange = (newText: string) => {
@@ -200,7 +222,7 @@ export default function CheckPage() {
   // Profile setup helper from prompt
   const handleLoadSampleProfile = () => {
     setProfile(SAMPLE_STUDENT_PROFILE);
-    saveStoredProfile(SAMPLE_STUDENT_PROFILE);
+    persistProfile(SAMPLE_STUDENT_PROFILE);
     setIsProfileMissing(false);
     setNotification(t('check.noticeLoadedProfile'));
     setTimeout(() => setNotification(null), 3000);
@@ -214,7 +236,7 @@ export default function CheckPage() {
       requirements: updatedReqs
     };
     setChecklist(updatedChecklist);
-    saveStoredChecklist(updatedChecklist);
+    persistChecklist(updatedChecklist);
   };
 
   const handleStartEditRequirement = (req: Requirement) => {
@@ -263,7 +285,7 @@ export default function CheckPage() {
 
     const updatedChecklist: Checklist = { ...checklist, requirements: updatedReqs };
     setChecklist(updatedChecklist);
-    saveStoredChecklist(updatedChecklist);
+    persistChecklist(updatedChecklist);
     setEditingReqId(null);
   };
 
@@ -300,7 +322,7 @@ export default function CheckPage() {
     };
 
     setChecklist(updatedChecklist);
-    saveStoredChecklist(updatedChecklist);
+    persistChecklist(updatedChecklist);
 
     // Reset form
     setNewReqForm({
@@ -314,26 +336,22 @@ export default function CheckPage() {
   };
 
   // 3. Compare with My Profile
-  const handleCompare = () => {
+  const handleCompare = async () => {
     if (!checklist.requirements || checklist.requirements.length === 0) {
       alert(t('check.compareNoRequirements'));
       return;
     }
 
-    // Save checklist
-    saveStoredChecklist(checklist);
-
-    // Evaluate against profile
     const activeProfile = isProfileMissing ? SAMPLE_STUDENT_PROFILE : profile;
-    const evalResult = evaluateProfileAgainstOpportunity(
-      checklist.requirements,
-      activeProfile,
-      checklist.title || opportunityTitle || 'Opportunity Checklist',
-      opportunityText
-    );
 
-    // Store evaluation
-    saveStoredEvaluation(evalResult);
+    // Record the checklist and the profile as evidence versions. The result
+    // page recomputes eligibility from these records, so no verdict is stored.
+    saveStoredChecklist(checklist);
+    try {
+      await syncAllEvidence(getEvidenceStore(), checklist, activeProfile);
+    } catch (err) {
+      console.warn('[Evidence] compare sync failed:', err);
+    }
 
     // Navigate to results
     router.push('/result');
@@ -426,6 +444,9 @@ export default function CheckPage() {
 
     saveStoredProfile(updated);
     setProfile(updated);
+    syncProfileEvidence(getEvidenceStore(), updated).catch((err) =>
+      console.warn('[Evidence] suggestion write failed:', err)
+    );
     setNotification(t('check.noticeAcceptedSuggestion', { title: sug.title }));
     setSuggestions((prev) =>
       prev.map((item) => (item.id === sug.id ? { ...item, status: 'accepted' as const } : item))

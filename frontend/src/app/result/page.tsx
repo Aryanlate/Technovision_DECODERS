@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  EvaluationResult,
   Finding,
   Checklist,
   Requirement,
@@ -20,21 +19,34 @@ import {
   trustForSourceUrl,
   resolveEntryKey,
   extractMissingSkills,
-  getLearningForSkill
+  getLearningForSkill,
+  versionRef
 } from '@opportunity-kit/shared';
+import type { EligibilityFinding, EvidenceRecord } from '@opportunity-kit/shared';
 import {
-  storageHelper,
   hasStoredProfile,
   getStoredProfile,
   saveStoredProfile,
-  getStoredChecklist,
-  getStoredEvaluation,
-  saveStoredEvaluation
+  getStoredChecklist
 } from '../../lib/storage';
+import { getEvidenceStore } from '../../lib/evidence/repository';
+import {
+  actionableEvidenceId,
+  confirmEvidenceRecord,
+  evaluateFromStore,
+  evidenceBadge,
+  indexRecords,
+  refreshEvidenceRecord,
+  resolveConflictingEvidence,
+  syncAllEvidence,
+  syncProfileEvidence,
+  toEvaluationResult
+} from '../../lib/evidence/bridge';
 import { SectionTitle } from '../../components/SectionTitle';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
+import type { BadgeStatus } from '../../components/Badge';
 import { TableSkeleton, SummarySkeleton, FailureAlert } from '../../components/LoadingSkeleton';
 import { generateMarkdownSummary, triggerPrintPdf, downloadDeadlineIcs, downloadJson } from '../../lib/export';
 import { downloadChecklistPdf } from '../../lib/pdf';
@@ -90,6 +102,56 @@ const AGENT_EVIDENCE_MODULES: AgentEvidenceModule[] = [
   }
 ];
 
+// ---------------------------------------------------------------------------
+// Evidence badges.
+//
+// Every badge shows a word, never just a colour. The row badge explains why a
+// requirement got its status; the per-version badge explains one stored record.
+// ---------------------------------------------------------------------------
+
+/** The badge word for a finding, from the evaluator's reason code. */
+function findingBadge(finding: Finding): BadgeStatus | null {
+  switch ((finding as EligibilityFinding).reasonCode) {
+    case 'UNCONFIRMED_AI':
+      return 'AI-suggested';
+    case 'STALE':
+      return 'Stale';
+    case 'CONFLICT':
+      return 'Conflict';
+    case 'SUPPORTED':
+      return 'Confirmed by you';
+    case 'UNVERIFIED':
+      return 'Unverified';
+    default:
+      return null;
+  }
+}
+
+/** The badge word for one stored evidence version. */
+function recordBadge(record: EvidenceRecord | undefined, fallbackOrigin: string, fallbackTrust: string): BadgeStatus {
+  // The stored version wins; the fallback covers evidence described by the
+  // decision but no longer in this snapshot.
+  if (record) return evidenceBadge(record);
+
+  if (fallbackOrigin === 'student_confirmed') return 'Confirmed by you';
+  if (fallbackOrigin === 'ai_generated') return 'AI-suggested';
+  if (fallbackTrust === 'verified') return 'Verified source';
+  return 'Unverified';
+}
+
+/** The one action that clears a "Missing info" reason, or null when there is none. */
+function missingInfoAction(reasonCode: string | undefined): 'confirm' | 'refresh' | 'resolve' | null {
+  if (reasonCode === 'UNCONFIRMED_AI') return 'confirm';
+  if (reasonCode === 'STALE') return 'refresh';
+  if (reasonCode === 'CONFLICT') return 'resolve';
+  return null;
+}
+
+/** Turns an enum-style word into something readable: student_confirmed -> student confirmed. */
+function readableWord(value: string): string {
+  return value.replace(/_/g, ' ');
+}
+
 export default function ResultPage() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -114,6 +176,55 @@ export default function ResultPage() {
   // What-if simulator: requirement ids the student assumed they will fix (never saved)
   const [assumedFixes, setAssumedFixes] = useState<string[]>([]);
 
+  // Every stored version the current decision was computed from, so the "Why?"
+  // drawer can show the origin, trust, source and time of each one.
+  const [evidenceRecords, setEvidenceRecords] = useState<EvidenceRecord[]>([]);
+  // requirementId of the row whose "Why?" drawer is open (one at a time).
+  const [openWhyId, setOpenWhyId] = useState<string | null>(null);
+
+  // The live inputs for a recompute, kept in refs so a store change always
+  // reads the newest checklist and profile instead of a stale closure.
+  const checklistRef = useRef<Checklist | null>(null);
+  const profileRef = useRef<StudentProfile>(SAMPLE_STUDENT_PROFILE);
+
+  /**
+   * Recomputes the decision from the stored evidence. This is the only way the
+   * result is produced: no verdict is ever read back from storage.
+   */
+  const recompute = useCallback(
+    async (nextChecklist?: Checklist, nextProfile?: StudentProfile) => {
+      const activeChecklist = nextChecklist ?? checklistRef.current;
+      const activeProfile = nextProfile ?? profileRef.current;
+      if (!activeChecklist) return;
+
+      if (nextChecklist) checklistRef.current = nextChecklist;
+      if (nextProfile) profileRef.current = nextProfile;
+
+      try {
+        const { decision, records } = await evaluateFromStore(
+          getEvidenceStore(),
+          activeChecklist,
+          activeProfile
+        );
+        setEvidenceRecords(records);
+        setResult(toEvaluationResult(decision, activeChecklist, SAMPLE_OPPORTUNITY_TEXT));
+      } catch (err) {
+        // IndexedDB unavailable (private mode, blocked storage): fall back to
+        // the same pure rule engine so the flow still works with no backend.
+        console.warn('[Evidence] live evaluation failed, using the rule engine directly:', err);
+        setResult(
+          evaluateProfileAgainstOpportunity(
+            activeChecklist.requirements,
+            activeProfile,
+            activeChecklist.title || 'Opportunity Eligibility Checklist',
+            SAMPLE_OPPORTUNITY_TEXT
+          )
+        );
+      }
+    },
+    []
+  );
+
   // Part 30: friendly, non-blocking Premium hints. They never replace a result.
   const [nudgesEnabled, setNudgesEnabled] = useState(false);
   const [gapNudgeAt, setGapNudgeAt] = useState<number | null>(null);
@@ -130,37 +241,48 @@ export default function ResultPage() {
       ? 'limit'
       : null;
 
-  // 1. Initial Load: profile, checklist, and evaluation
+  // 1. Initial Load: profile and checklist, then the first live evaluation.
+  //
+  // Whatever is already on this device is recorded as evidence versions first
+  // (the one-time migration also runs here), and the decision is recomputed
+  // from those records. After that, every change the evidence store reports
+  // recomputes the result again, so it is always live and never a stored verdict.
   useEffect(() => {
-    const profileExists = hasStoredProfile();
-    const loadedProfile = getStoredProfile();
-    setProfile(loadedProfile);
+    let cancelled = false;
 
-    if (!profileExists && (!loadedProfile || !loadedProfile.name || loadedProfile.name === 'Student')) {
-      setIsProfileMissing(true);
-    } else {
-      setIsProfileMissing(false);
-    }
+    const load = async () => {
+      const profileExists = hasStoredProfile();
+      const loadedProfile = getStoredProfile();
 
-    // Load checklist
-    let loadedChecklist = getStoredChecklist();
-    if (!loadedChecklist || !loadedChecklist.requirements || loadedChecklist.requirements.length === 0) {
-      loadedChecklist = SAMPLE_CHECKLIST;
-    }
-    setChecklist(loadedChecklist);
+      let loadedChecklist = getStoredChecklist();
+      if (!loadedChecklist || !loadedChecklist.requirements || loadedChecklist.requirements.length === 0) {
+        loadedChecklist = SAMPLE_CHECKLIST;
+      }
 
-    // Load or calculate evaluation result
-    let evalData = getStoredEvaluation();
-    if (!evalData || !evalData.checklist) {
-      evalData = evaluateProfileAgainstOpportunity(
-        loadedChecklist.requirements,
-        loadedProfile || SAMPLE_STUDENT_PROFILE,
-        loadedChecklist.title || 'Opportunity Eligibility Checklist',
-        SAMPLE_OPPORTUNITY_TEXT
+      checklistRef.current = loadedChecklist;
+      profileRef.current = loadedProfile;
+      setProfile(loadedProfile);
+      setChecklist(loadedChecklist);
+      setIsProfileMissing(
+        !profileExists && (!loadedProfile || !loadedProfile.name || loadedProfile.name === 'Student')
       );
-      saveStoredEvaluation(evalData);
-    }
-    setResult(evalData);
+
+      // Seed the store from this device, then evaluate from what is stored.
+      try {
+        await syncAllEvidence(getEvidenceStore(), loadedChecklist, loadedProfile);
+      } catch (err) {
+        console.warn('[Evidence] seed write failed:', err);
+      }
+      if (!cancelled) await recompute(loadedChecklist, loadedProfile);
+    };
+
+    void load();
+
+    // Live updates: an inline fix, a profile edit or an agent confirmation
+    // writes a new evidence version, and the result recomputes.
+    const unsubscribe = getEvidenceStore().subscribe(() => {
+      void recompute();
+    });
 
     const updatePlanState = () => {
       setUsageStats(getUsageStats());
@@ -171,26 +293,24 @@ export default function ResultPage() {
 
     window.addEventListener('opportunitykit_plan_changed', updatePlanState);
     return () => {
+      cancelled = true;
+      unsubscribe();
       window.removeEventListener('opportunitykit_plan_changed', updatePlanState);
     };
-  }, []);
+  }, [recompute]);
 
   // 2. Profile Setup Handlers
   const handleLoadSampleProfile = () => {
     setProfile(SAMPLE_STUDENT_PROFILE);
+    profileRef.current = SAMPLE_STUDENT_PROFILE;
     saveStoredProfile(SAMPLE_STUDENT_PROFILE);
     setIsProfileMissing(false);
 
-    // Re-evaluate immediately
-    const activeReqs = checklist?.requirements || SAMPLE_CHECKLIST.requirements;
-    const newEval = evaluateProfileAgainstOpportunity(
-      activeReqs,
-      SAMPLE_STUDENT_PROFILE,
-      checklist?.title || result?.opportunityTitle || 'Opportunity Eligibility Checklist',
-      result?.rawOpportunityText || SAMPLE_OPPORTUNITY_TEXT
-    );
-    setResult(newEval);
-    saveStoredEvaluation(newEval);
+    // Record the sample facts as new evidence versions; the store change
+    // recomputes the result live.
+    syncProfileEvidence(getEvidenceStore(), SAMPLE_STUDENT_PROFILE)
+      .catch((err) => console.warn('[Evidence] sample profile write failed:', err))
+      .finally(() => void recompute());
 
     setInlineNotice(t('result.notices.loadedSample'));
     setTimeout(() => setInlineNotice(null), 3500);
@@ -313,21 +433,16 @@ export default function ResultPage() {
       }
     }
 
-    // Persist updated profile
+    // Persist the updated profile locally, then record it as a new evidence
+    // version. The store change recomputes the decision live, so nothing is
+    // evaluated here and no verdict is stored.
     setProfile(updatedProfile);
+    profileRef.current = updatedProfile;
     saveStoredProfile(updatedProfile);
 
-    // Re-evaluate checklist against updated profile INSTANTLY without reload!
-    const activeReqs = checklist?.requirements || SAMPLE_CHECKLIST.requirements;
-    const recomputed = evaluateProfileAgainstOpportunity(
-      activeReqs,
-      updatedProfile,
-      checklist?.title || result?.opportunityTitle || 'Opportunity Eligibility Checklist',
-      result?.rawOpportunityText || SAMPLE_OPPORTUNITY_TEXT
-    );
-
-    setResult(recomputed);
-    saveStoredEvaluation(recomputed);
+    syncProfileEvidence(getEvidenceStore(), updatedProfile)
+      .catch((err) => console.warn('[Evidence] inline fix write failed:', err))
+      .finally(() => void recompute());
 
     // Clear fix input
     setActiveFixValues((prev) => ({ ...prev, [finding.requirementId]: '' }));
@@ -350,13 +465,43 @@ export default function ResultPage() {
   };
 
   // What-if simulator toggle. This ONLY updates local state; it never writes to
-  // the real profile or storage, so the saved evaluation stays untouched.
+  // the real profile or storage, so the evaluated evidence stays untouched.
   const toggleAssumedFix = (requirementId: string) => {
     setAssumedFixes((prev) =>
       prev.includes(requirementId)
         ? prev.filter((id) => id !== requirementId)
         : [...prev, requirementId]
     );
+  };
+
+  /**
+   * The one real action a "Missing info" row can offer, keyed by the reason the
+   * requirement has no confirmed fact. It writes a new evidence version, which
+   * recomputes the result live.
+   */
+  const runEvidenceAction = async (
+    action: 'confirm' | 'refresh' | 'resolve',
+    finding: Finding
+  ) => {
+    const evidenceId = actionableEvidenceId(
+      finding as EligibilityFinding,
+      indexRecords(evidenceRecords)
+    );
+    if (!evidenceId) return;
+
+    try {
+      const store = getEvidenceStore();
+      if (action === 'confirm') await confirmEvidenceRecord(store, evidenceId);
+      else if (action === 'refresh') await refreshEvidenceRecord(store, evidenceId);
+      else await resolveConflictingEvidence(store, evidenceId);
+
+      setInlineNotice(t('result.notices.updatedProfile', { title: finding.title || finding.requirementId }));
+      setTimeout(() => setInlineNotice(null), 3500);
+    } catch (err) {
+      console.warn('[Evidence] action failed:', err);
+    } finally {
+      void recompute();
+    }
   };
 
   // Loading Skeleton State
@@ -408,6 +553,11 @@ export default function ResultPage() {
   // Lookup maps so each rendered step can be localised without re-scanning.
   const findingByRequirementId = new Map(findings.map((f) => [f.requirementId, f]));
   const requirementById = new Map(requirements.map((r) => [r.id, r]));
+
+  // Every stored version the decision was computed from, keyed by
+  // `evidenceId@version`, so the "Why?" drawer can show its origin, trust,
+  // source and time.
+  const recordIndex = indexRecords(evidenceRecords);
 
   const counts = (result as any).counts || {
     matches: result.summary?.matches || 0,
@@ -952,8 +1102,20 @@ export default function ResultPage() {
                 {findings.map((f, idx) => {
                   const isMissing = f.status === 'Missing info';
 
+                  // Evidence traceability for this row: its badge comes from the
+                  // evaluator's reason code, its drawer is built from the stored
+                  // versions the decision was computed from, and Missing info rows
+                  // offer the one action that clears the reason.
+                  const eligibility = f as EligibilityFinding;
+                  const rowKey = f.requirementId || String(idx);
+                  const supporting = eligibility.supportingEvidence || [];
+                  const excluded = eligibility.excludedEvidence || [];
+                  const evidenceBadge = findingBadge(f);
+                  const evidenceAction = missingInfoAction(eligibility.reasonCode);
+                  const isWhyOpen = openWhyId === rowKey;
+
                   return (
-                    <React.Fragment key={f.requirementId || idx}>
+                    <React.Fragment key={rowKey}>
                       <tr
                         className={`transition-colors ${
                           isMissing
@@ -982,9 +1144,12 @@ export default function ResultPage() {
                           )}
                         </td>
 
-                        {/* 4. Status Badge */}
+                        {/* 4. Status Badge + evidence badge */}
                         <td className="p-3.5 border-r border-[#111111] align-top text-center shrink-0 min-w-[130px]">
-                          <Badge status={f.status} size="sm" />
+                          <div className="flex flex-col items-center gap-1.5">
+                            <Badge status={f.status} size="sm" />
+                            {evidenceBadge && <Badge status={evidenceBadge} size="sm" />}
+                          </div>
                         </td>
 
                         {/* 5. One-line Reason with Rule Used */}
@@ -996,6 +1161,33 @@ export default function ResultPage() {
                             <span className="inline-block text-[10px] uppercase font-bold text-[#111111]/60 px-1.5 py-0.2 bg-[#F1EEE6] border border-[#111111]/20">
                               {t('result.audit.rulePrefix', { rule: f.ruleUsed })}
                             </span>
+
+                            {/* Evidence action for Missing info rows that have a real fix */}
+                            {evidenceAction && (
+                              <div className="pt-1 flex flex-wrap items-center gap-2">
+                                <Button
+                                  variant="solid"
+                                  size="sm"
+                                  onClick={() => runEvidenceAction(evidenceAction, f)}
+                                >
+                                  {t(`result.why.actions.${evidenceAction}`)}
+                                </Button>
+                                <span className="text-[10px] font-body text-[#111111]/70">
+                                  {t(`result.why.${evidenceAction}Hint`)}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* "Why?" drawer toggle */}
+                            <button
+                              type="button"
+                              aria-expanded={isWhyOpen}
+                              aria-controls={`why-${rowKey}`}
+                              onClick={() => setOpenWhyId(isWhyOpen ? null : rowKey)}
+                              className="inline-block mt-1 text-[10px] uppercase font-bold tracking-wide border border-[#111111] bg-white hover:bg-[#111111] hover:text-[#F1EEE6] px-2 py-0.5 transition-colors"
+                            >
+                              {isWhyOpen ? t('result.why.close') : t('result.why.open')}
+                            </button>
 
                             {/* What-if toggle: local only, never saved to the profile */}
                             {f.status !== 'Match' && (
@@ -1224,6 +1416,153 @@ export default function ResultPage() {
                                 )}
                               </div>
                             </div>
+                          </td>
+                        </tr>
+                      )}
+
+                      {/* "Why?" drawer: the exact evidence versions behind this row */}
+                      {isWhyOpen && (
+                        <tr id={`why-${rowKey}`} className="bg-[#F1EEE6] border-b border-[#111111]">
+                          <td colSpan={5} className="p-4 sm:px-6">
+                            <div className="flex items-center justify-between gap-3 pb-2 border-b border-[#111111]/20">
+                              <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#111111]">
+                                {t('result.why.title')}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setOpenWhyId(null)}
+                                className="text-[10px] uppercase font-bold border border-[#111111] bg-white hover:bg-[#111111] hover:text-[#F1EEE6] px-2 py-0.5 transition-colors"
+                              >
+                                {t('result.why.close')}
+                              </button>
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2 pt-3">
+                              {/* Supporting evidence: the confirmed facts that back the status */}
+                              <div>
+                                <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#2F7D5B]">
+                                  {t('result.why.supporting')}
+                                </div>
+                                {supporting.length === 0 ? (
+                                  <p className="mt-1.5 text-xs font-body text-[#111111]/60">
+                                    {t('result.why.noSupporting')}
+                                  </p>
+                                ) : (
+                                  <ul className="mt-1.5 space-y-2">
+                                    {supporting.map((item) => {
+                                      const record = recordIndex.get(versionRef(item));
+                                      const source = record?.source;
+                                      return (
+                                        <li
+                                          key={versionRef(item)}
+                                          className="border border-[#111111]/25 bg-white p-2.5"
+                                        >
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <Badge status={recordBadge(record, item.origin, item.trust)} size="sm" />
+                                            <span className="font-mono text-[10px] font-bold text-[#111111]">
+                                              {t('result.why.evidenceId')}: {item.evidenceId}
+                                            </span>
+                                            <span className="font-mono text-[10px] text-[#111111]/70">
+                                              {t('result.why.versionLabel', { version: item.version })}
+                                            </span>
+                                          </div>
+                                          <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[10px] font-mono text-[#111111]/80">
+                                            <dt className="font-bold uppercase">{t('result.why.originLabel')}</dt>
+                                            <dd>{readableWord(record?.origin || item.origin)}</dd>
+                                            <dt className="font-bold uppercase">{t('result.why.trustLabel')}</dt>
+                                            <dd>{readableWord(record?.trust || item.trust)}</dd>
+                                            <dt className="font-bold uppercase">{t('result.why.recordedLabel')}</dt>
+                                            <dd>
+                                              {record
+                                                ? new Date(record.createdAt).toLocaleString()
+                                                : t('result.why.noSource')}
+                                            </dd>
+                                          </dl>
+                                          <div className="mt-1.5 text-[10px] font-mono">
+                                            <span className="font-bold uppercase text-[#111111]/70">
+                                              {t('result.why.sourceLabel')}:{' '}
+                                            </span>
+                                            {source?.url ? (
+                                              <a
+                                                href={source.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="underline text-[#111111] break-all"
+                                              >
+                                                {source.url}
+                                              </a>
+                                            ) : source?.sentence ? (
+                                              <span className="italic text-[#111111]">“{source.sentence}”</span>
+                                            ) : (
+                                              <span className="text-[#111111]/60">{t('result.why.noSource')}</span>
+                                            )}
+                                          </div>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                )}
+                              </div>
+
+                              {/* Excluded evidence: everything that was left out, and why */}
+                              <div>
+                                <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D98A1F]">
+                                  {t('result.why.excluded')}
+                                </div>
+                                {excluded.length === 0 ? (
+                                  <p className="mt-1.5 text-xs font-body text-[#111111]/60">
+                                    {t('result.why.noExcluded')}
+                                  </p>
+                                ) : (
+                                  <ul className="mt-1.5 space-y-2">
+                                    {excluded.map((item) => {
+                                      const record = recordIndex.get(versionRef(item));
+                                      return (
+                                        <li
+                                          key={versionRef(item)}
+                                          className="border border-[#111111]/25 bg-white p-2.5"
+                                        >
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <Badge
+                                              status={recordBadge(record, record?.origin || '', record?.trust || '')}
+                                              size="sm"
+                                            />
+                                            <span className="font-mono text-[10px] font-bold text-[#111111]">
+                                              {t('result.why.evidenceId')}: {item.evidenceId}
+                                            </span>
+                                            <span className="font-mono text-[10px] text-[#111111]/70">
+                                              {t('result.why.versionLabel', { version: item.version })}
+                                            </span>
+                                          </div>
+                                          <div className="mt-1.5 text-[10px] font-mono">
+                                            <span className="font-bold uppercase text-[#111111]/70">
+                                              {t('result.why.reasonLabel')}:{' '}
+                                            </span>
+                                            <span className="text-[#111111]">{item.why}</span>
+                                          </div>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* The one action that clears a Missing info reason */}
+                            {evidenceAction && (
+                              <div className="mt-3 pt-3 border-t border-[#111111]/20 flex flex-wrap items-center gap-2">
+                                <Button
+                                  variant="solid"
+                                  size="sm"
+                                  onClick={() => runEvidenceAction(evidenceAction, f)}
+                                >
+                                  {t(`result.why.actions.${evidenceAction}`)}
+                                </Button>
+                                <span className="text-[10px] font-body text-[#111111]/70">
+                                  {t(`result.why.${evidenceAction}Hint`)}
+                                </span>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       )}

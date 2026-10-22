@@ -63,6 +63,13 @@ export function newDeviceId(): string {
   return `dev-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+/** Stable ordering: by evidence id, then by version ascending. */
+function sortHistory(rows: EvidenceRecord[]): EvidenceRecord[] {
+  return rows.sort(
+    (a, b) => a.evidenceId.localeCompare(b.evidenceId) || a.version - b.version
+  );
+}
+
 export class EvidenceStore {
   readonly db: EvidenceDatabase;
   private listeners = new Set<EvidenceListener>();
@@ -272,6 +279,24 @@ export class EvidenceStore {
   /** Every version of one evidence id, oldest first. Nothing is ever dropped. */
   async getHistory(evidenceId: string): Promise<EvidenceRecord[]> {
     return withStorageErrors(async () => this.readHistory(evidenceId));
+  }
+
+  /**
+   * Every stored version about one subject, oldest version first. The
+   * evaluator needs the whole history, not just the current version, so it can
+   * also report which older evidence was excluded and why.
+   */
+  async listBySubject(subjectId: string): Promise<EvidenceRecord[]> {
+    const rows = await withStorageErrors(() =>
+      this.db.evidence.where('subjectId').equals(subjectId).toArray()
+    );
+    return sortHistory(rows);
+  }
+
+  /** Every stored version of every fact, for the evidence audit page. */
+  async listAll(): Promise<EvidenceRecord[]> {
+    const rows = await withStorageErrors(() => this.db.evidence.toArray());
+    return sortHistory(rows);
   }
 
   /** Queued operations, oldest first, ready to be pushed to the server. */
