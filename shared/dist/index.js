@@ -27,4 +27,5 @@ __exportStar(require("./lib/sustainability.js"), exports);
 __exportStar(require("./lib/flags.js"), exports);
 __exportStar(require("./evidence/index.js"), exports);
 __exportStar(require("./evaluator/index.js"), exports);
+__exportStar(require("./sync/index.js"), exports);
 //# sourceMappingURL=index.js.map

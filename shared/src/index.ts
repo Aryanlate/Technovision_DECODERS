@@ -11,3 +11,4 @@ export * from './lib/sustainability.js';
 export * from './lib/flags.js';
 export * from './evidence/index.js';
 export * from './evaluator/index.js';
+export * from './sync/index.js';
