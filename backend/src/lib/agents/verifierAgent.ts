@@ -5,7 +5,10 @@ import {
   Checklist,
   StudentProfile,
   VerifierAgentOutput,
-  VerifiedSource
+  VerifiedSource,
+  EvidenceRecord,
+  EvidenceTrust,
+  createDraftEvidence
 } from './types.js';
 import { checkOpportunityScam } from './scamChecker.js';
 
@@ -26,6 +29,7 @@ export interface VerifierAgentInput {
   organizationDomain?: string;
   /** Sources gathered elsewhere (e.g. by the ResearchAgent). */
   sources?: VerifierSourceInput[];
+  existingEvidence?: EvidenceRecord[];
 }
 
 interface CandidateSource {
@@ -184,16 +188,41 @@ export class VerifierAgent implements Agent<VerifierAgentInput, VerifierAgentOut
     };
   }
 
+  private buildEvidenceDrafts(sources: VerifiedSource[], existingEvidence?: EvidenceRecord[]): EvidenceRecord[] {
+    return sources.map((s) => {
+      const trust: EvidenceTrust =
+        s.trust === 'Verified' ? 'verified' : s.trust === 'Needs review' ? 'needs_review' : 'unverified';
+      return createDraftEvidence({
+        subjectType: 'opportunity',
+        subjectId: 'opportunity',
+        kind: 'source_verification',
+        key: `source-${s.url.toLowerCase().replace(/[^a-z0-9_-]/g, '_')}`,
+        value: s,
+        source: {
+          type: 'verifier_agent',
+          agent: this.name,
+          provider: 'rule-verifier',
+          url: s.url,
+          sentence: s.reasons?.join('; ') || s.trust
+        },
+        trust,
+        existingEvidence
+      });
+    });
+  }
+
   async run(input: VerifierAgentInput): Promise<AgentResult<VerifierAgentOutput>> {
     const startTime = Date.now();
     const isDemo = process.env.DEMO_MODE === 'true';
 
     if (isDemo) {
       const data = this.cachedDemoResult();
+      const evidence = this.buildEvidenceDrafts(data.sources, input.existingEvidence);
       return {
         agent: this.name,
         status: 'done',
         data,
+        evidence,
         sources: this.toAgentSources(data.sources),
         notes: ['DEMO_MODE active: returning cached source trust labels.'],
         confidence: data.confidence,
@@ -219,6 +248,7 @@ export class VerifierAgent implements Agent<VerifierAgentInput, VerifierAgentOut
         agent: this.name,
         status: 'done',
         data,
+        evidence: [],
         sources: [],
         notes: data.notes,
         confidence: 'low',
@@ -253,10 +283,13 @@ export class VerifierAgent implements Agent<VerifierAgentInput, VerifierAgentOut
       confidence
     };
 
+    const evidence = this.buildEvidenceDrafts(labelled, input.existingEvidence);
+
     return {
       agent: this.name,
       status: 'done',
       data,
+      evidence,
       sources: this.toAgentSources(labelled),
       notes: [data.summary, ...data.notes],
       confidence,

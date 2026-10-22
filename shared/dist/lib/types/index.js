@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AgentSuggestionSchema = exports.AgentProgressEventSchema = exports.AgentResultSchema = exports.AgentSourceSchema = exports.EvaluationResultSchema = exports.AgentEvidenceSchema = exports.EvaluationSummarySchema = exports.ResultSchema = exports.ResultCountsSchema = exports.FindingSchema = exports.ChecklistSchema = exports.RequirementSchema = exports.ParsedRuleDetailSchema = exports.RequirementKindSchema = exports.StudentProfileSchema = exports.PlanTypeSchema = exports.StudentLinksSchema = exports.DocumentItemSchema = exports.DocumentTypeSchema = exports.ProjectSchema = exports.RequirementCategorySchema = exports.RequirementStatusSchema = void 0;
 const zod_1 = require("zod");
+const types_js_1 = require("../../evidence/types.js");
 // ============================================================================
 // 1. Requirement Status & Categories
 // ============================================================================
@@ -232,7 +233,8 @@ exports.AgentResultSchema = zod_1.z.object({
     confidence: zod_1.z.enum(['high', 'medium', 'low']),
     providerUsed: zod_1.z.string(),
     timeTakenMs: zod_1.z.number().optional(),
-    error: zod_1.z.string().optional()
+    error: zod_1.z.string().optional(),
+    evidence: zod_1.z.array(types_js_1.EvidenceRecordSchema).optional()
 });
 exports.AgentProgressEventSchema = zod_1.z.object({
     agent: zod_1.z.string(),
@@ -244,6 +246,7 @@ exports.AgentProgressEventSchema = zod_1.z.object({
 });
 exports.AgentSuggestionSchema = zod_1.z.object({
     id: zod_1.z.string(),
+    evidenceId: zod_1.z.string().optional(),
     agent: zod_1.z.string(),
     type: zod_1.z.enum(['skill', 'project', 'link', 'document', 'info']),
     title: zod_1.z.string(),
@@ -251,6 +254,7 @@ exports.AgentSuggestionSchema = zod_1.z.object({
     value: zod_1.z.any(),
     confidence: zod_1.z.enum(['high', 'medium', 'low']),
     sources: zod_1.z.array(exports.AgentSourceSchema),
-    status: zod_1.z.enum(['pending', 'accepted', 'rejected'])
+    status: zod_1.z.enum(['pending', 'accepted', 'rejected']),
+    evidenceRecord: types_js_1.EvidenceRecordSchema.optional()
 });
 //# sourceMappingURL=index.js.map

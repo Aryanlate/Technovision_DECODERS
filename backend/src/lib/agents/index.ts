@@ -66,6 +66,7 @@ export async function runOpportunityEvidenceAgent(
   opportunityText: string,
   baselineRequirements: Requirement[]
 ): Promise<{ requirements: Requirement[]; evidence: AgentEvidence[] }> {
+  // An agent must never write student_confirmed evidence.
   const defaultEvidence: AgentEvidence[] = baselineRequirements.map((req, idx) => ({
     id: `ev-${idx + 1}`,
     agentId: 'agent-opportunity-evidence-01',
@@ -73,7 +74,7 @@ export async function runOpportunityEvidenceAgent(
     source: `Text fragment: "${req.rule}"`,
     finding: `Extracted criteria "${req.title}" with mandatory constraint.`,
     confidence: 0.96,
-    studentConfirmed: true,
+    studentConfirmed: false,
     extractedField: req.category,
     extractedValue: req.parsedRule
   }));
@@ -93,7 +94,6 @@ export async function runOpportunityEvidenceAgent(
         agentRole: 'Opportunity Evidence Extractor',
         source: `Direct quote: "${r.sourceSentence}"`,
         finding: `Detected requirement "${r.title || r.label}": ${r.rule || r.label}`,
-        // AI-suggested requirements are less certain and always need the student's confirmation.
         confidence: r.aiSuggested ? 0.6 : 0.9,
         studentConfirmed: false,
         extractedField: r.category,
@@ -106,7 +106,7 @@ export async function runOpportunityEvidenceAgent(
       };
     }
   } catch (err) {
-    console.warn('[OpportunityEvidenceAgent] Error running agent, using verified baseline evidence:', err);
+    console.warn('[OpportunityEvidenceAgent] Error running agent, using baseline evidence:', err);
   }
 
   return {
@@ -145,7 +145,7 @@ export async function runProfileEvidenceAgent(profile: any): Promise<AgentEviden
       source: `File URI: ${profile.resumeUrl}`,
       finding: 'Valid resume document uploaded and verified.',
       confidence: 0.99,
-      studentConfirmed: true,
+      studentConfirmed: false,
       extractedField: 'resume',
       extractedValue: profile.resumeUrl
     });

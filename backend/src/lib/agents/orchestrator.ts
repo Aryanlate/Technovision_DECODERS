@@ -7,7 +7,9 @@ import {
   OrchestratorRunInput,
   OrchestratorRunOutput,
   ProgressCallback,
-  StudentProfile
+  StudentProfile,
+  EvidenceRecord,
+  EvidenceTrust
 } from './types.js';
 import { OpportunityReader } from './opportunityReader.js';
 import { GitHubAnalyzer } from './githubAnalyzer.js';
@@ -145,7 +147,8 @@ export class Orchestrator {
         runSafe('OpportunityReader', () =>
           this.opportunityReader.run({
             opportunityText: input.opportunityText,
-            language: input.language
+            language: input.language,
+            existingEvidence: input.existingEvidence
           })
         )
       );
@@ -158,7 +161,8 @@ export class Orchestrator {
             githubUrl: input.profile?.links?.github,
             profileSkills: input.profile?.skills,
             projects: input.profile?.projects,
-            language: input.language
+            language: input.language,
+            existingEvidence: input.existingEvidence
           })
         )
       );
@@ -171,7 +175,8 @@ export class Orchestrator {
             linkedinUrl: input.profile?.links?.linkedin,
             pastedText: (input as any).linkedInText || (input.profile as any)?.linkedInText,
             profile: input.profile,
-            language: input.language
+            language: input.language,
+            existingEvidence: input.existingEvidence
           })
         )
       );
@@ -191,7 +196,8 @@ export class Orchestrator {
           organizationName: detectedOrg,
           opportunityTitle: oppResult?.title,
           opportunityText: input.opportunityText,
-          language: input.language
+          language: input.language,
+          existingEvidence: input.existingEvidence
         })
       );
     }
@@ -210,7 +216,8 @@ export class Orchestrator {
         this.verifierAgent.run({
           profile: input.profile,
           opportunityText: input.opportunityText,
-          sources: researchedSources
+          sources: researchedSources,
+          existingEvidence: input.existingEvidence
         })
       );
     }
@@ -223,9 +230,51 @@ export class Orchestrator {
         this.discoveryAgent.run({
           profile: input.profile,
           opportunityTitle: oppResult?.title,
-          language: input.language
+          language: input.language,
+          existingEvidence: input.existingEvidence
         })
       );
+    }
+
+    // ------------------------------------------------------------------------
+    // APPLY VERIFIER TRUST TO EVIDENCE DRAFTS
+    // ------------------------------------------------------------------------
+    const verifiedTrustByUrl = new Map<string, EvidenceTrust>();
+    const verifierSources = results['VerifierAgent']?.data?.sources || [];
+    for (const s of verifierSources) {
+      const t: EvidenceTrust =
+        s.trust === 'Verified' ? 'verified' : s.trust === 'Needs review' ? 'needs_review' : 'unverified';
+      if (s.url) {
+        verifiedTrustByUrl.set(s.url.toLowerCase().trim(), t);
+      }
+    }
+
+    const allEvidenceDrafts: EvidenceRecord[] = [];
+    for (const [, res] of Object.entries(results)) {
+      if (res.evidence && Array.isArray(res.evidence)) {
+        for (const record of res.evidence) {
+          if (record.source?.url && verifiedTrustByUrl.has(record.source.url.toLowerCase().trim())) {
+            record.trust = verifiedTrustByUrl.get(record.source.url.toLowerCase().trim())!;
+          }
+          allEvidenceDrafts.push(record);
+        }
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // SUPPRESSION OF IDENTICAL RE-SUGGESTIONS PREVIOUSLY REJECTED
+    // ------------------------------------------------------------------------
+    const suppressedKeys = new Set<string>();
+    for (const r of input.existingEvidence || []) {
+      if (r.status === 'rejected') {
+        suppressedKeys.add(r.evidenceId);
+        if (r.source?.url) {
+          suppressedKeys.add(`${r.key}::${r.source.url.toLowerCase().trim()}`);
+        }
+        if (r.source?.agent) {
+          suppressedKeys.add(`${r.key}::${r.source.agent}`);
+        }
+      }
     }
 
     // ------------------------------------------------------------------------
@@ -235,6 +284,7 @@ export class Orchestrator {
 
     // 1. Suggestions from GitHub (Skills & Verified Projects)
     const githubData = results['GitHubAnalyzer']?.data;
+    const githubEvidence = results['GitHubAnalyzer']?.evidence || [];
     if (githubData) {
       // Skills from GitHub
       const ghSkills = githubData.suggestedSkills || [];
@@ -242,10 +292,17 @@ export class Orchestrator {
         const skillName = typeof item === 'string' ? item : item.skill;
         const evidenceRepos = Array.isArray(item?.evidence) ? item.evidence.join(', ') : 'GitHub repository';
         const norm = (skillName || '').toLowerCase().trim();
-        if (norm && !existingSkills.has(norm)) {
+        const evRecord = githubEvidence.find((e) => e.key === `skill-${norm}`);
+
+        const isSuppressed = (evRecord && suppressedKeys.has(evRecord.evidenceId)) ||
+          suppressedKeys.has(`skill-${norm}::GitHubAnalyzer`);
+
+        if (norm && !existingSkills.has(norm) && !isSuppressed) {
           existingSkills.add(norm); // Deduplicate
           suggestions.push({
-            id: `sug-gh-skill-${suggestions.length + 1}`,
+            id: evRecord?.evidenceId || `sug-gh-skill-${suggestions.length + 1}`,
+            evidenceId: evRecord?.evidenceId,
+            evidenceRecord: evRecord,
             agent: 'GitHubAnalyzer',
             type: 'skill',
             title: `Add Skill: ${skillName}`,
@@ -265,10 +322,17 @@ export class Orchestrator {
       );
       for (const proj of ghProjects) {
         const pNorm = (proj.title || '').toLowerCase().trim();
-        if (pNorm && !existingProjectTitles.has(pNorm)) {
+        const evRecord = githubEvidence.find((e) => e.key === `project-${pNorm}`);
+
+        const isSuppressed = (evRecord && suppressedKeys.has(evRecord.evidenceId)) ||
+          suppressedKeys.has(`project-${pNorm}::GitHubAnalyzer`);
+
+        if (pNorm && !existingProjectTitles.has(pNorm) && !isSuppressed) {
           existingProjectTitles.add(pNorm);
           suggestions.push({
-            id: `sug-gh-proj-${suggestions.length + 1}`,
+            id: evRecord?.evidenceId || `sug-gh-proj-${suggestions.length + 1}`,
+            evidenceId: evRecord?.evidenceId,
+            evidenceRecord: evRecord,
             agent: 'GitHubAnalyzer',
             type: 'project',
             title: `Add Project: ${proj.title}`,
@@ -291,6 +355,7 @@ export class Orchestrator {
 
     // 2. Suggestions from LinkedIn (Skills & Experiences)
     const linkedinData = results['LinkedInAnalyzer']?.data;
+    const linkedinEvidence = results['LinkedInAnalyzer']?.evidence || [];
     if (linkedinData) {
       // Skills from LinkedIn
       const liSkills = linkedinData.skills || (linkedinData.suggestedSkills || []).map((s: string) => ({ skill: s, sentence: 'Extracted from LinkedIn text', confidence: 'high' }));
@@ -298,10 +363,17 @@ export class Orchestrator {
         const skillName = typeof item === 'string' ? item : item.skill;
         const sentence = typeof item === 'object' && item.sentence ? ` "${item.sentence}"` : '';
         const norm = (skillName || '').toLowerCase().trim();
-        if (norm && !existingSkills.has(norm)) {
+        const evRecord = linkedinEvidence.find((e) => e.key === `skill-${norm}`);
+
+        const isSuppressed = (evRecord && suppressedKeys.has(evRecord.evidenceId)) ||
+          suppressedKeys.has(`skill-${norm}::LinkedInAnalyzer`);
+
+        if (norm && !existingSkills.has(norm) && !isSuppressed) {
           existingSkills.add(norm);
           suggestions.push({
-            id: `sug-li-skill-${suggestions.length + 1}`,
+            id: evRecord?.evidenceId || `sug-li-skill-${suggestions.length + 1}`,
+            evidenceId: evRecord?.evidenceId,
+            evidenceRecord: evRecord,
             agent: 'LinkedInAnalyzer',
             type: 'skill',
             title: `Add Skill: ${skillName}`,
@@ -317,24 +389,34 @@ export class Orchestrator {
       // Experiences from LinkedIn
       const liExperiences = linkedinData.experiences || [];
       for (const exp of liExperiences) {
-        suggestions.push({
-          id: `sug-li-exp-${suggestions.length + 1}`,
-          agent: 'LinkedInAnalyzer',
-          type: 'project',
-          title: `Add Experience: ${exp.title} at ${exp.company}`,
-          description: `Extracted from sentence: "${exp.sentence}"${exp.duration ? ` (${exp.duration})` : ''}`,
-          value: {
-            title: `${exp.title} - ${exp.company}`,
-            domains: ['Professional Experience'],
-            tech: [],
-            role: exp.title,
-            status: 'completed',
-            proofLink: input.profile?.links?.linkedin || 'https://linkedin.com'
-          },
-          confidence: exp.confidence || 'high',
-          sources: results['LinkedInAnalyzer']?.sources || [],
-          status: 'pending'
-        });
+        const keyPart = `${exp.title.toLowerCase().trim()}-${exp.company.toLowerCase().trim()}`;
+        const evRecord = linkedinEvidence.find((e) => e.key === `project-${keyPart}`);
+
+        const isSuppressed = (evRecord && suppressedKeys.has(evRecord.evidenceId)) ||
+          suppressedKeys.has(`project-${keyPart}::LinkedInAnalyzer`);
+
+        if (!isSuppressed) {
+          suggestions.push({
+            id: evRecord?.evidenceId || `sug-li-exp-${suggestions.length + 1}`,
+            evidenceId: evRecord?.evidenceId,
+            evidenceRecord: evRecord,
+            agent: 'LinkedInAnalyzer',
+            type: 'project',
+            title: `Add Experience: ${exp.title} at ${exp.company}`,
+            description: `Extracted from sentence: "${exp.sentence}"${exp.duration ? ` (${exp.duration})` : ''}`,
+            value: {
+              title: `${exp.title} - ${exp.company}`,
+              domains: ['Professional Experience'],
+              tech: [],
+              role: exp.title,
+              status: 'completed',
+              proofLink: input.profile?.links?.linkedin || 'https://linkedin.com'
+            },
+            confidence: exp.confidence || 'high',
+            sources: results['LinkedInAnalyzer']?.sources || [],
+            status: 'pending'
+          });
+        }
       }
     }
 
@@ -346,6 +428,7 @@ export class Orchestrator {
       results,
       events,
       suggestions,
+      evidence: allEvidenceDrafts,
       totalTimeMs
     };
   }

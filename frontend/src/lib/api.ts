@@ -10,7 +10,12 @@ import {
   buildLocalDiscoveryCards,
   checkScam,
   SAMPLE_STUDENT_PROFILE,
-  SAMPLE_CHECKLIST
+  SAMPLE_CHECKLIST,
+  EvidenceRecord,
+  createDraftEvidence,
+  deriveEvidenceId,
+  validUntilFromStaleness,
+  EVIDENCE_KIND
 } from '@opportunity-kit/shared';
 import { getStoredLocale } from './i18n';
 
@@ -78,6 +83,7 @@ export async function runAgentOrchestration(
     agentFilter?: string[];
     /** Interface language for AI-written prose; defaults to the saved choice. */
     language?: string;
+    existingEvidence?: EvidenceRecord[];
   },
   onProgress?: (event: AgentProgressEvent) => void
 ): Promise<OrchestratorRunOutput & { isOfflineFallback?: boolean }> {
@@ -96,7 +102,8 @@ export async function runAgentOrchestration(
         opportunityText: input.opportunityText,
         profile: input.profile,
         agentFilter: input.agentFilter,
-        language: input.language || getStoredLocale()
+        language: input.language || getStoredLocale(),
+        existingEvidence: input.existingEvidence
       }),
       signal: controller.signal
     });
@@ -183,7 +190,7 @@ export async function discoverOpportunities(
  * when backend is offline or sleeping.
  */
 function runBrowserOfflineFallback(
-  input: { opportunityText: string; profile?: StudentProfile },
+  input: { opportunityText: string; profile?: StudentProfile; existingEvidence?: EvidenceRecord[] },
   onProgress?: (event: AgentProgressEvent) => void,
   startTime: number = Date.now()
 ): OrchestratorRunOutput & { isOfflineFallback: boolean } {
@@ -419,41 +426,141 @@ function runBrowserOfflineFallback(
     });
   });
 
+  const now = new Date();
+  const subjectId = profile.id || 'student';
+  const offlineEvidence: EvidenceRecord[] = [];
+
+  // Offline GitHub Evidence Drafts
+  const ghSkills = ['TypeScript', 'Next.js'];
+  for (const s of ghSkills) {
+    offlineEvidence.push(
+      createDraftEvidence({
+        subjectType: 'profile',
+        subjectId,
+        kind: EVIDENCE_KIND.GITHUB_DERIVED,
+        key: s,
+        value: s,
+        trust: 'verified',
+        source: {
+          type: 'agent',
+          agent: 'GitHubAnalyzer',
+          provider: 'offline-cache',
+          url: 'https://github.com/alexsharma',
+          sentence: `Skill ${s} detected in student repository code.`
+        },
+        observedAt: now,
+        validUntil: validUntilFromStaleness(EVIDENCE_KIND.GITHUB_DERIVED, now).toISOString(),
+        existingHistory: input.existingEvidence
+      })
+    );
+  }
+
+  // Offline LinkedIn Evidence Drafts
+  offlineEvidence.push(
+    createDraftEvidence({
+      subjectType: 'profile',
+      subjectId,
+      kind: EVIDENCE_KIND.PROFILE_TEXT_ANALYSIS,
+      key: 'Web Accessibility',
+      value: 'Web Accessibility',
+      trust: 'needs_review',
+      source: {
+        type: 'agent',
+        agent: 'LinkedInAnalyzer',
+        provider: 'offline-cache',
+        url: 'https://linkedin.com/in/alexsharma',
+        sentence: 'Student demonstrated web accessibility knowledge.'
+      },
+      observedAt: now,
+      validUntil: validUntilFromStaleness(EVIDENCE_KIND.PROFILE_TEXT_ANALYSIS, now).toISOString(),
+      existingHistory: input.existingEvidence
+    })
+  );
+
+  // Offline Verifier Evidence Drafts
+  for (const src of results.VerifierAgent.sources || []) {
+    offlineEvidence.push(
+      createDraftEvidence({
+        subjectType: 'opportunity',
+        subjectId: checklist.title || 'opportunity',
+        kind: 'source_verification',
+        key: src.url || src.title,
+        value: { title: src.title, url: src.url, trust: src.trust },
+        trust: src.trust === 'Verified' ? 'verified' : src.trust === 'Needs review' ? 'needs_review' : 'unverified',
+        source: {
+          type: 'verification',
+          agent: 'VerifierAgent',
+          provider: 'browser-rule-verifier',
+          url: src.url,
+          sentence: `Source ${src.title} evaluated.`
+        },
+        observedAt: now,
+        validUntil: validUntilFromStaleness('source_verification', now).toISOString(),
+        existingHistory: input.existingEvidence
+      })
+    );
+  }
+
+  // Suppress identical re-suggestions from the same source if previously rejected
+  const rejectedRecords = (input.existingEvidence || []).filter((e) => e.status === 'rejected');
+  const activeOfflineEvidence = offlineEvidence.filter((draft) => {
+    const isSuppressed = rejectedRecords.some(
+      (rej) =>
+        rej.evidenceId === draft.evidenceId ||
+        (rej.kind === draft.kind &&
+          rej.key === draft.key &&
+          rej.source?.url === draft.source?.url &&
+          rej.source?.agent === draft.source?.agent)
+    );
+    return !isSuppressed;
+  });
+
   const suggestions: AgentSuggestion[] = [
     {
-      id: 'sug-1',
+      id: deriveEvidenceId(subjectId, EVIDENCE_KIND.GITHUB_DERIVED, 'TypeScript'),
+      evidenceId: deriveEvidenceId(subjectId, EVIDENCE_KIND.GITHUB_DERIVED, 'TypeScript'),
+      evidenceRecord: activeOfflineEvidence.find((e) => e.key === 'TypeScript'),
       agent: 'GitHubAnalyzer',
-      type: 'skill',
+      type: 'skill' as const,
       title: 'Add Skill: TypeScript',
       description: 'Detected in GitHub repositories analyzed from personal code projects.',
       value: 'TypeScript',
-      confidence: 'high',
+      confidence: 'high' as const,
       sources: results.GitHubAnalyzer.sources,
-      status: 'pending'
+      status: 'pending' as const
     },
     {
-      id: 'sug-2',
+      id: deriveEvidenceId(subjectId, EVIDENCE_KIND.GITHUB_DERIVED, 'Next.js'),
+      evidenceId: deriveEvidenceId(subjectId, EVIDENCE_KIND.GITHUB_DERIVED, 'Next.js'),
+      evidenceRecord: activeOfflineEvidence.find((e) => e.key === 'Next.js'),
       agent: 'GitHubAnalyzer',
-      type: 'skill',
+      type: 'skill' as const,
       title: 'Add Skill: Next.js',
       description: 'Found in modern web application project dependencies.',
       value: 'Next.js',
-      confidence: 'high',
+      confidence: 'high' as const,
       sources: results.GitHubAnalyzer.sources,
-      status: 'pending'
+      status: 'pending' as const
     },
     {
-      id: 'sug-3',
+      id: deriveEvidenceId(subjectId, 'link', 'github'),
+      evidenceId: deriveEvidenceId(subjectId, 'link', 'github'),
       agent: 'VerifierAgent',
-      type: 'link',
+      type: 'link' as const,
       title: 'Add GitHub Link to Profile',
       description: 'This opportunity requests a GitHub or portfolio link to inspect code samples.',
       value: { field: 'github' },
-      confidence: 'high',
+      confidence: 'high' as const,
       sources: results.VerifierAgent.sources,
-      status: 'pending'
+      status: 'pending' as const
     }
-  ];
+  ].filter((sug) => {
+    return !rejectedRecords.some(
+      (rej) =>
+        rej.evidenceId === sug.evidenceId ||
+        (rej.source?.agent === sug.agent && rej.key === String(sug.value))
+    );
+  });
 
   return {
     orchestrationId: `offline-${Date.now()}`,
@@ -461,6 +568,7 @@ function runBrowserOfflineFallback(
     results,
     events,
     suggestions,
+    evidence: activeOfflineEvidence,
     totalTimeMs: Date.now() - startTime,
     isOfflineFallback: true
   };

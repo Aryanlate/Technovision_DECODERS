@@ -9,7 +9,9 @@ import {
   Requirement,
   parseOpportunityToChecklist,
   SAMPLE_OPPORTUNITY_TEXT,
-  SAMPLE_OPPORTUNITY_TITLE
+  SAMPLE_OPPORTUNITY_TITLE,
+  EvidenceRecord,
+  createDraftEvidence
 } from './types.js';
 import { askAgentLLM } from '../llm/index.js';
 
@@ -19,6 +21,7 @@ export interface OpportunityReaderInput {
   opportunityType?: string;
   /** Interface language for AI-written prose ('en' | 'hi' | 'mr'). */
   language?: string;
+  existingEvidence?: EvidenceRecord[];
 }
 
 type ReaderType = OpportunityReaderOutput['opportunityType'];
@@ -87,6 +90,32 @@ Return ONLY JSON of this shape: { "opportunityType": "internship" | "scholarship
  *    confirmation; parser output is never overwritten by the LLM.
  * 4. Output is validated with zod by the gateway.
  */
+function buildOpportunityEvidenceDrafts(
+  requirements: Requirement[],
+  subjectId: string,
+  providerUsed: string,
+  existingEvidence?: EvidenceRecord[]
+): EvidenceRecord[] {
+  return requirements.map((req) =>
+    createDraftEvidence({
+      subjectType: 'opportunity',
+      subjectId: subjectId || 'opportunity',
+      kind: req.kind,
+      key: req.id,
+      value: req,
+      source: {
+        type: 'opportunity_reader',
+        agent: 'OpportunityReader',
+        provider: providerUsed,
+        url: 'input://opportunity-text',
+        sentence: req.sourceSentence || req.rule || req.label
+      },
+      trust: 'unverified',
+      existingEvidence
+    })
+  );
+}
+
 export class OpportunityReader implements Agent<OpportunityReaderInput, OpportunityReaderOutput> {
   public readonly name = 'OpportunityReader';
 
@@ -107,10 +136,18 @@ export class OpportunityReader implements Agent<OpportunityReaderInput, Opportun
         evidenceNotes: ['DEMO_MODE: cached benchmark requirements parsed by the rule parser.']
       };
 
+      const evidence = buildOpportunityEvidenceDrafts(
+        checklist.requirements,
+        checklist.title || SAMPLE_OPPORTUNITY_TITLE,
+        'cache',
+        input.existingEvidence
+      );
+
       return {
         agent: this.name,
         status: 'done',
         data: demoData,
+        evidence,
         sources: [
           { title: 'Benchmark Opportunity Listing', url: 'local://benchmark-opportunity', trust: 'Verified' }
         ],
@@ -129,6 +166,7 @@ export class OpportunityReader implements Agent<OpportunityReaderInput, Opportun
         agent: this.name,
         status: 'done',
         data: { opportunityType: 'other', title: 'Opportunity', requirements: [], evidenceNotes: [] },
+        evidence: [],
         sources: [],
         notes: ['No opportunity text provided; nothing to read.'],
         confidence: 'low',
@@ -160,6 +198,12 @@ export class OpportunityReader implements Agent<OpportunityReaderInput, Opportun
       confidence: 'high' | 'medium' | 'low'
     ): AgentResult<OpportunityReaderOutput> => {
       const evidenceNotes = notes.slice();
+      const evidence = buildOpportunityEvidenceDrafts(
+        requirements,
+        checklist.title || 'opportunity',
+        providerUsed,
+        input.existingEvidence
+      );
       return {
         agent: this.name,
         status: 'done',
@@ -169,6 +213,7 @@ export class OpportunityReader implements Agent<OpportunityReaderInput, Opportun
           requirements: requirements.map((r) => toReaderRequirement(r, aiSuggestedSet.has(r))),
           evidenceNotes
         },
+        evidence,
         sources,
         notes,
         confidence,

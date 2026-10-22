@@ -13,7 +13,8 @@ import {
   type EvaluationSummary,
   type EvidenceRecord,
   type Result,
-  type StudentProfile
+  type StudentProfile,
+  type AgentSuggestion
 } from '@opportunity-kit/shared';
 import type { EvidenceStore } from './repository';
 
@@ -365,3 +366,197 @@ export function actionableEvidenceId(
 
   return undefined;
 }
+
+/**
+ * Writes agent evidence drafts to the local store:
+ * - If no history exists, writes version 1 as origin: 'ai_generated', status: 'active'.
+ * - If history exists:
+ *   - If the student has confirmed it, do NOT overwrite or revise.
+ *   - If the record has been rejected (or previously rejected from the same source), suppress it.
+ *   - If content changed, revise to version n+1.
+ * - An agent must never write student_confirmed evidence.
+ */
+export async function syncAgentEvidence(
+  store: EvidenceStore,
+  drafts: EvidenceRecord[]
+): Promise<EvidenceWriteSummary> {
+  await ensureEvidenceStore(store);
+  const summary: EvidenceWriteSummary = { added: 0, revised: 0, unchanged: 0 };
+
+  for (const draft of drafts) {
+    // Agents must never write student_confirmed evidence
+    const safeDraft: EvidenceRecord = {
+      ...draft,
+      origin: draft.origin === 'student_confirmed' ? 'ai_generated' : draft.origin
+    };
+
+    const history = await store.getHistory(safeDraft.evidenceId);
+
+    if (history.length === 0) {
+      if (isBlank(safeDraft.value)) {
+        summary.unchanged += 1;
+        continue;
+      }
+      await store.add({
+        evidenceId: safeDraft.evidenceId,
+        subjectType: safeDraft.subjectType,
+        subjectId: safeDraft.subjectId,
+        kind: safeDraft.kind,
+        key: safeDraft.key,
+        value: safeDraft.value,
+        origin: 'ai_generated',
+        trust: safeDraft.trust || 'unverified',
+        source: safeDraft.source,
+        observedAt: safeDraft.observedAt,
+        validUntil: safeDraft.validUntil
+      });
+      summary.added += 1;
+      continue;
+    }
+
+    const current = currentVersion(history);
+
+    // Suppress if student previously confirmed or rejected this fact
+    if (current.origin === 'student_confirmed') {
+      summary.unchanged += 1;
+      continue;
+    }
+
+    if (current.status === 'rejected') {
+      summary.unchanged += 1;
+      continue;
+    }
+
+    // Suppress identical re-suggestions from the same source if any past version was rejected
+    const previouslyRejectedSameSource = history.some(
+      (h) =>
+        h.status === 'rejected' &&
+        h.source?.url === safeDraft.source?.url &&
+        h.source?.agent === safeDraft.source?.agent
+    );
+    if (previouslyRejectedSameSource) {
+      summary.unchanged += 1;
+      continue;
+    }
+
+    if (contentHash(current) === contentHash(safeDraft)) {
+      summary.unchanged += 1;
+      continue;
+    }
+
+    await store.revise(safeDraft.evidenceId, {
+      origin: 'ai_generated',
+      trust: safeDraft.trust || 'unverified',
+      kind: safeDraft.kind,
+      key: safeDraft.key,
+      value: safeDraft.value,
+      source: safeDraft.source,
+      observedAt: safeDraft.observedAt,
+      validUntil: safeDraft.validUntil
+    });
+    summary.revised += 1;
+  }
+
+  return summary;
+}
+
+/**
+ * Loads unconfirmed ai_generated evidence from the store and maps to AgentSuggestion[]
+ * - View over active records where origin === 'ai_generated' and status === 'active'.
+ * - Omits records that were confirmed (origin === 'student_confirmed') or rejected.
+ * - Omits records whose history contains a rejection from the same source (suppression).
+ */
+export async function getUnconfirmedAiSuggestions(
+  store: EvidenceStore
+): Promise<AgentSuggestion[]> {
+  await ensureEvidenceStore(store);
+  const allRecords = await store.listAll();
+
+  // Group by evidenceId
+  const byEvidenceId = new Map<string, EvidenceRecord[]>();
+  for (const rec of allRecords) {
+    const list = byEvidenceId.get(rec.evidenceId) || [];
+    list.push(rec);
+    byEvidenceId.set(rec.evidenceId, list);
+  }
+
+  const suggestions: AgentSuggestion[] = [];
+
+  for (const [evidenceId, history] of byEvidenceId.entries()) {
+    const current = currentVersion(history);
+
+    // Only unconfirmed ai_generated active records
+    if (current.origin !== 'ai_generated' || current.status !== 'active') {
+      continue;
+    }
+
+    // Suppress if any rejected version exists with same source
+    const hasRejectedSameSource = history.some(
+      (h) =>
+        h.status === 'rejected' &&
+        h.source?.url === current.source?.url &&
+        h.source?.agent === current.source?.agent
+    );
+    if (hasRejectedSameSource) {
+      continue;
+    }
+
+    const sugType: 'skill' | 'project' | 'link' | 'document' | 'info' =
+      current.kind === 'skill' || current.kind === 'github_derived' || current.kind === 'profile_text_analysis'
+        ? 'skill'
+        : current.kind === 'project'
+        ? 'project'
+        : current.kind === 'link'
+        ? 'link'
+        : current.kind === 'document'
+        ? 'document'
+        : 'info';
+
+    const sourceTrust =
+      current.trust === 'verified'
+        ? 'Verified'
+        : current.trust === 'needs_review'
+        ? 'Needs review'
+        : 'Unverified';
+
+    const sourceList = current.source
+      ? [
+          {
+            title: current.source.agent || 'AI Agent',
+            url: current.source.url || '',
+            trust: sourceTrust as any
+          }
+        ]
+      : [];
+
+    const title =
+      sugType === 'skill'
+        ? `Add Skill: ${current.key || current.value}`
+        : sugType === 'project'
+        ? `Verified Project: ${current.key}`
+        : sugType === 'link'
+        ? `Add Link: ${current.key}`
+        : `${current.kind}: ${current.key}`;
+
+    const description =
+      current.source?.sentence ||
+      (current.source?.agent ? `Detected by ${current.source.agent}` : 'AI-extracted evidence candidate');
+
+    suggestions.push({
+      id: evidenceId,
+      evidenceId,
+      evidenceRecord: current,
+      agent: current.source?.agent || 'Agent',
+      type: sugType,
+      title,
+      description,
+      value: current.value,
+      confidence: current.trust === 'verified' ? 'high' : current.trust === 'needs_review' ? 'medium' : 'low',
+      sources: sourceList,
+      status: 'pending'
+    });
+  }
+
+  return suggestions;
+}
+

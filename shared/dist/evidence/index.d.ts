@@ -113,4 +113,37 @@ export declare function fnv1aHash(input: string): string;
 export declare function contentFields(record: EvidenceRecord): Record<string, unknown>;
 /** Same fact in two versions (or two devices) hashes to the same value. */
 export declare function contentHash(record: EvidenceRecord): string;
+/**
+ * Derives a stable evidenceId from subjectId, kind and key.
+ * Finding the same logical fact again will produce this exact same evidenceId.
+ */
+export declare function deriveEvidenceId(subjectId: string, kind: string, key: string): string;
+/**
+ * Calculates validUntil ISO timestamp from the staleness limit for a kind.
+ */
+export declare function validUntilFromStaleness(kind: string, observedAt?: Date): string | undefined;
+export interface CreateDraftEvidenceInput {
+    subjectType: SubjectType;
+    subjectId: string;
+    kind: string;
+    key: string;
+    value: unknown;
+    source: EvidenceSource;
+    trust?: EvidenceTrust;
+    existingEvidence?: EvidenceRecord[];
+    observedAt?: string;
+    validUntil?: string;
+    deviceId?: string;
+    opId?: string;
+    now?: Date;
+}
+/**
+ * Creates an EvidenceRecord draft for AI-gathered facts.
+ * - origin is always 'ai_generated' (an agent must never write student_confirmed).
+ * - trust comes from the Verifier (default 'unverified').
+ * - validUntil comes from the staleness constants.
+ * - Finding the same logical fact again creates a new version of the same evidenceId
+ *   (derived from subjectId, kind, key) and never creates a duplicate or replaces the old one.
+ */
+export declare function createDraftEvidence(input: CreateDraftEvidenceInput): EvidenceRecord;
 //# sourceMappingURL=index.d.ts.map

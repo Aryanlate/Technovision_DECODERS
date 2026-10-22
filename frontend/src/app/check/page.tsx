@@ -29,7 +29,10 @@ import { getEvidenceStore } from '../../lib/evidence/repository';
 import {
   syncAllEvidence,
   syncChecklistEvidence,
-  syncProfileEvidence
+  syncProfileEvidence,
+  syncAgentEvidence,
+  getUnconfirmedAiSuggestions,
+  ensureEvidenceStore
 } from '../../lib/evidence/bridge';
 import { wakeBackend, runAgentOrchestration, BackendConnectionStatus } from '../../lib/api';
 import { SectionTitle } from '../../components/SectionTitle';
@@ -151,6 +154,16 @@ export default function CheckPage() {
     } else {
       reparseText(SAMPLE_OPPORTUNITY_TEXT, SAMPLE_OPPORTUNITY_TITLE, 'auto');
     }
+
+    // Load initial unconfirmed AI-generated evidence suggestions
+    const store = getEvidenceStore();
+    getUnconfirmedAiSuggestions(store)
+      .then((unconfirmed) => {
+        if (unconfirmed && unconfirmed.length > 0) {
+          setSuggestions(unconfirmed);
+        }
+      })
+      .catch((err) => console.warn('[Evidence] Initial suggestions load error:', err));
   }, []);
 
   // 2. Parse text into structured checklist
@@ -365,11 +378,16 @@ export default function CheckPage() {
     );
 
     try {
+      const store = getEvidenceStore();
+      await ensureEvidenceStore(store);
+      const existingEvidence = await store.listAll();
+
       const activeProfile = isProfileMissing ? SAMPLE_STUDENT_PROFILE : profile;
       const result = await runAgentOrchestration(
         {
           opportunityText,
-          profile: activeProfile
+          profile: activeProfile,
+          existingEvidence
         },
         (progressEv: AgentProgressEvent) => {
           setAgentActivity((prev) =>
@@ -393,7 +411,15 @@ export default function CheckPage() {
       }
 
       setTotalOrchestrationTimeMs(result.totalTimeMs);
-      setSuggestions(result.suggestions || []);
+
+      // Save agent evidence drafts to local evidence store
+      if (result.evidence && result.evidence.length > 0) {
+        await syncAgentEvidence(store, result.evidence);
+      }
+
+      // Rewire suggestions inbox as a view over unconfirmed ai_generated evidence
+      const unconfirmed = await getUnconfirmedAiSuggestions(store);
+      setSuggestions(unconfirmed.length > 0 ? unconfirmed : result.suggestions || []);
 
       // Synchronize agent activity with final results
       setAgentActivity((prev) =>
@@ -422,7 +448,17 @@ export default function CheckPage() {
     }
   };
 
-  const handleAcceptSuggestion = (sug: AgentSuggestion) => {
+  const handleAcceptSuggestion = async (sug: AgentSuggestion) => {
+    const store = getEvidenceStore();
+    const evidenceId = sug.evidenceId || sug.id;
+
+    // Accept calls confirmEvidence: creates a new student_confirmed version linked to the AI version
+    try {
+      await store.confirm(evidenceId);
+    } catch (err) {
+      console.warn('[Evidence] confirm evidence error:', err);
+    }
+
     const currentProfile = getStoredProfile();
     let updated = { ...currentProfile };
 
@@ -444,19 +480,29 @@ export default function CheckPage() {
 
     saveStoredProfile(updated);
     setProfile(updated);
-    syncProfileEvidence(getEvidenceStore(), updated).catch((err) =>
+    syncProfileEvidence(store, updated).catch((err) =>
       console.warn('[Evidence] suggestion write failed:', err)
     );
     setNotification(t('check.noticeAcceptedSuggestion', { title: sug.title }));
-    setSuggestions((prev) =>
-      prev.map((item) => (item.id === sug.id ? { ...item, status: 'accepted' as const } : item))
-    );
+
+    // Re-read unconfirmed AI suggestions: the accepted item is now student_confirmed, so excluded
+    const unconfirmed = await getUnconfirmedAiSuggestions(store);
+    setSuggestions(unconfirmed);
   };
 
-  const handleRejectSuggestion = (sugId: string) => {
-    setSuggestions((prev) =>
-      prev.map((item) => (item.id === sugId ? { ...item, status: 'rejected' as const } : item))
-    );
+  const handleRejectSuggestion = async (sugId: string) => {
+    const store = getEvidenceStore();
+
+    // Reject calls rejectEvidence: status rejected, and identical re-suggestions from the same source are suppressed
+    try {
+      await store.reject(sugId);
+    } catch (err) {
+      console.warn('[Evidence] reject evidence error:', err);
+    }
+
+    // Re-read unconfirmed AI suggestions: the rejected item is status 'rejected', so excluded
+    const unconfirmed = await getUnconfirmedAiSuggestions(store);
+    setSuggestions(unconfirmed);
   };
 
   const detectedType = detectOpportunityType(opportunityText, opportunityTitle);

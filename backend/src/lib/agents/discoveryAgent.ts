@@ -15,7 +15,11 @@ import {
   skillGapSummary,
   trustForSourceUrl,
   compare,
-  detectOpportunityType
+  detectOpportunityType,
+  EvidenceRecord,
+  EvidenceTrust,
+  EVIDENCE_KIND,
+  createDraftEvidence
 } from './types.js';
 import { askAgentLLM } from '../llm/index.js';
 import { OpportunityReader } from './opportunityReader.js';
@@ -27,6 +31,7 @@ export interface DiscoveryAgentInput {
   domain?: string;
   /** Interface language for AI-written prose ('en' | 'hi' | 'mr'). */
   language?: string;
+  existingEvidence?: EvidenceRecord[];
 }
 
 /** One candidate opportunity, ready to be read, verified and compared. */
@@ -75,6 +80,33 @@ export class DiscoveryAgent implements Agent<DiscoveryAgentInput, DiscoveryAgent
   private reader = new OpportunityReader();
   private verifier = new VerifierAgent();
 
+  private buildEvidenceDrafts(
+    cards: DiscoveryListingCard[],
+    providerUsed: string,
+    existingEvidence?: EvidenceRecord[]
+  ): EvidenceRecord[] {
+    return cards.map((card) => {
+      const trust: EvidenceTrust =
+        card.trust === 'Verified' ? 'verified' : card.trust === 'Needs review' ? 'needs_review' : 'unverified';
+      return createDraftEvidence({
+        subjectType: 'opportunity',
+        subjectId: card.title,
+        kind: EVIDENCE_KIND.RESEARCHED_FACT,
+        key: `discovery-${card.title.toLowerCase().replace(/[^a-z0-9_-]/g, '_')}`,
+        value: card,
+        source: {
+          type: 'discovery_agent',
+          agent: this.name,
+          provider: providerUsed,
+          url: card.sourceUrl,
+          sentence: card.fitReason || card.title
+        },
+        trust,
+        existingEvidence
+      });
+    });
+  }
+
   async run(input: DiscoveryAgentInput): Promise<AgentResult<DiscoveryAgentOutput>> {
     const startTime = Date.now();
     const profile = input.profile ?? SAMPLE_STUDENT_PROFILE;
@@ -86,10 +118,12 @@ export class DiscoveryAgent implements Agent<DiscoveryAgentInput, DiscoveryAgent
     // ----------------------------------------------------------------------
     if (isDemo) {
       const data = buildLocalDiscoveryCards(profile);
+      const evidence = this.buildEvidenceDrafts(data.listings, 'cache', input.existingEvidence);
       return {
         agent: this.name,
         status: 'done',
         data,
+        evidence,
         sources: this.toSources(data.listings),
         notes: ['DEMO_MODE active: returning cached discovery results.', ...data.notes],
         confidence: 'high',
@@ -124,10 +158,13 @@ export class DiscoveryAgent implements Agent<DiscoveryAgentInput, DiscoveryAgent
         confidence: searched ? 'medium' : 'high'
       };
 
+      const evidence = this.buildEvidenceDrafts(ranked, providerUsed, input.existingEvidence);
+
       return {
         agent: this.name,
         status: 'done',
         data,
+        evidence,
         sources: this.toSources(ranked),
         notes: data.notes,
         confidence: data.confidence,
@@ -137,10 +174,12 @@ export class DiscoveryAgent implements Agent<DiscoveryAgentInput, DiscoveryAgent
     } catch (err: any) {
       // Never leave the page empty: fall back to the curated local list.
       const data = buildLocalDiscoveryCards(profile);
+      const evidence = this.buildEvidenceDrafts(data.listings, 'curated-fallback', input.existingEvidence);
       return {
         agent: this.name,
         status: 'done',
         data,
+        evidence,
         sources: this.toSources(data.listings),
         notes: [
           `Discovery error (${err?.message || err}); returned the curated local list instead.`

@@ -8,6 +8,7 @@ import {
   type EvidenceTrust,
   type SubjectType
 } from './types.js';
+import { staleAfterDays } from './staleness.js';
 
 export * from './types.js';
 export * from './staleness.js';
@@ -386,3 +387,113 @@ export function contentFields(record: EvidenceRecord): Record<string, unknown> {
 export function contentHash(record: EvidenceRecord): string {
   return fnv1aHash(stableStringify(contentFields(record)));
 }
+
+// ---------------------------------------------------------------------------
+// Draft AI Evidence Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Derives a stable evidenceId from subjectId, kind and key.
+ * Finding the same logical fact again will produce this exact same evidenceId.
+ */
+export function deriveEvidenceId(subjectId: string, kind: string, key: string): string {
+  const sanitize = (val: string) => String(val).toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+  return `ev-${sanitize(subjectId)}-${sanitize(kind)}-${sanitize(key)}`;
+}
+
+/**
+ * Calculates validUntil ISO timestamp from the staleness limit for a kind.
+ */
+export function validUntilFromStaleness(kind: string, observedAt: Date = new Date()): string | undefined {
+  const days = staleAfterDays(kind);
+  if (days === null) return undefined;
+  return new Date(observedAt.getTime() + days * 86_400_000).toISOString();
+}
+
+export interface CreateDraftEvidenceInput {
+  subjectType: SubjectType;
+  subjectId: string;
+  kind: string;
+  key: string;
+  value: unknown;
+  source: EvidenceSource;
+  trust?: EvidenceTrust;
+  existingEvidence?: EvidenceRecord[];
+  observedAt?: string;
+  validUntil?: string;
+  deviceId?: string;
+  opId?: string;
+  now?: Date;
+}
+
+/**
+ * Creates an EvidenceRecord draft for AI-gathered facts.
+ * - origin is always 'ai_generated' (an agent must never write student_confirmed).
+ * - trust comes from the Verifier (default 'unverified').
+ * - validUntil comes from the staleness constants.
+ * - Finding the same logical fact again creates a new version of the same evidenceId
+ *   (derived from subjectId, kind, key) and never creates a duplicate or replaces the old one.
+ */
+export function createDraftEvidence(input: CreateDraftEvidenceInput): EvidenceRecord {
+  const now = input.now ?? new Date();
+  const observedAt = input.observedAt ?? now.toISOString();
+  const validUntil = input.validUntil ?? validUntilFromStaleness(input.kind, now);
+  const evidenceId = deriveEvidenceId(input.subjectId, input.kind, input.key);
+
+  const history = input.existingEvidence ? historyOf(evidenceId, input.existingEvidence) : [];
+
+  if (history.length > 0) {
+    const current = currentVersion(history);
+    // If student already confirmed this fact, an agent must never overwrite it:
+    // it creates an advisory record linked to it
+    if (current.origin === 'student_confirmed') {
+      return createAdvisoryEvidence({
+        subjectType: input.subjectType,
+        subjectId: input.subjectId,
+        kind: input.kind,
+        key: input.key,
+        value: input.value,
+        trust: input.trust ?? 'unverified',
+        source: input.source,
+        observedAt,
+        validUntil,
+        linkedRef: versionRef(current),
+        deviceId: input.deviceId,
+        opId: input.opId,
+        now
+      });
+    }
+
+    // Existing AI record (or non-confirmed): append version n+1 of the same evidenceId
+    const revision = reviseEvidence(history, {
+      origin: 'ai_generated',
+      trust: input.trust ?? current.trust ?? 'unverified',
+      value: input.value,
+      source: input.source,
+      observedAt,
+      validUntil,
+      deviceId: input.deviceId,
+      opId: input.opId,
+      now
+    });
+    return revision.record;
+  }
+
+  return createEvidence({
+    evidenceId,
+    subjectType: input.subjectType,
+    subjectId: input.subjectId,
+    kind: input.kind,
+    key: input.key,
+    value: input.value,
+    origin: 'ai_generated',
+    trust: input.trust ?? 'unverified',
+    source: input.source,
+    observedAt,
+    validUntil,
+    deviceId: input.deviceId,
+    opId: input.opId,
+    now
+  });
+}
+

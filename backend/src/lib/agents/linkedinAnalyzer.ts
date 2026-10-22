@@ -7,7 +7,10 @@ import {
   LINKEDIN_ANALYZER_SPEC,
   LinkedInExtractedSkill,
   LinkedInExtractedExperience,
-  LinkedInExtractedEducation
+  LinkedInExtractedEducation,
+  EvidenceRecord,
+  EVIDENCE_KIND,
+  createDraftEvidence
 } from './types.js';
 import { askAgentLLM } from '../llm/index.js';
 
@@ -17,6 +20,7 @@ export interface LinkedInAnalyzerInput {
   profile?: any;
   /** Interface language for AI-written prose ('en' | 'hi' | 'mr'). */
   language?: string;
+  existingEvidence?: EvidenceRecord[];
 }
 
 /**
@@ -175,6 +179,93 @@ function runKeywordRuleFallback(text: string, handle: string): LinkedInAnalyzerO
   };
 }
 
+function buildLinkedInEvidenceDrafts(
+  output: LinkedInAnalyzerOutput,
+  url: string,
+  providerUsed: string,
+  existingEvidence?: EvidenceRecord[]
+): EvidenceRecord[] {
+  const records: EvidenceRecord[] = [];
+  const subjectId = 'student';
+
+  // Skills
+  for (const s of output.skills || []) {
+    const skillName = typeof s === 'string' ? s : s.skill;
+    const sentence = typeof s === 'object' && s.sentence ? s.sentence : `Skill: ${skillName}`;
+    records.push(
+      createDraftEvidence({
+        subjectType: 'profile',
+        subjectId,
+        kind: EVIDENCE_KIND.PROFILE_TEXT_ANALYSIS,
+        key: `skill-${skillName.toLowerCase().trim()}`,
+        value: skillName,
+        source: {
+          type: 'linkedin_analyzer',
+          agent: 'LinkedInAnalyzer',
+          provider: providerUsed,
+          url,
+          sentence
+        },
+        trust: 'unverified',
+        existingEvidence
+      })
+    );
+  }
+
+  // Experiences
+  for (const exp of output.experiences || []) {
+    records.push(
+      createDraftEvidence({
+        subjectType: 'profile',
+        subjectId,
+        kind: EVIDENCE_KIND.PROFILE_TEXT_ANALYSIS,
+        key: `project-${exp.title.toLowerCase().trim()}-${exp.company.toLowerCase().trim()}`,
+        value: {
+          title: `${exp.title} - ${exp.company}`,
+          domains: ['Professional Experience'],
+          tech: [],
+          role: exp.title,
+          status: 'completed',
+          proofLink: url
+        },
+        source: {
+          type: 'linkedin_analyzer',
+          agent: 'LinkedInAnalyzer',
+          provider: providerUsed,
+          url,
+          sentence: exp.sentence || `Experience: ${exp.title} at ${exp.company}`
+        },
+        trust: 'unverified',
+        existingEvidence
+      })
+    );
+  }
+
+  // Education
+  for (const edu of output.education || []) {
+    records.push(
+      createDraftEvidence({
+        subjectType: 'profile',
+        subjectId,
+        kind: EVIDENCE_KIND.PROFILE_TEXT_ANALYSIS,
+        key: 'education',
+        value: edu.degree,
+        source: {
+          type: 'linkedin_analyzer',
+          agent: 'LinkedInAnalyzer',
+          provider: providerUsed,
+          url,
+          sentence: edu.sentence || `Education: ${edu.degree}`
+        },
+        trust: 'unverified',
+        existingEvidence
+      })
+    );
+  }
+
+  return records;
+}
+
 export class LinkedInAnalyzer implements Agent<LinkedInAnalyzerInput, LinkedInAnalyzerOutput> {
   public readonly name = 'LinkedInAnalyzer';
 
@@ -232,14 +323,17 @@ export class LinkedInAnalyzer implements Agent<LinkedInAnalyzerInput, LinkedInAn
     // PRIVACY & SCRAPING POLICY: LinkedIn blocks scraping, so we never fetch the URL directly.
     // If no text is pasted, return benchmark sample with clear compliance notice.
     if (isDemo || !pastedText) {
+      const url = linkedinUrl || 'https://linkedin.com/in/alexsharma';
+      const evidence = buildLinkedInEvidenceDrafts(sampleOutput, url, 'offline-cache', input.existingEvidence);
       return {
         agent: this.name,
         status: 'done',
         data: sampleOutput,
+        evidence,
         sources: [
           {
             title: 'Sample LinkedIn Profile Record',
-            url: linkedinUrl || 'https://linkedin.com/in/alexsharma',
+            url,
             trust: 'Needs review'
           }
         ],
@@ -274,14 +368,18 @@ export class LinkedInAnalyzer implements Agent<LinkedInAnalyzerInput, LinkedInAn
           verifiedEducation: llmRes.data.education[0]?.degree || llmRes.data.verifiedEducation
         };
 
+        const url = linkedinUrl || 'student://linkedin-text';
+        const evidence = buildLinkedInEvidenceDrafts(enriched, url, llmRes.provider, input.existingEvidence);
+
         return {
           agent: this.name,
           status: 'done',
           data: enriched,
+          evidence,
           sources: [
             {
               title: 'Student Provided LinkedIn Profile Text',
-              url: linkedinUrl || 'student://linkedin-text',
+              url,
               trust: 'Verified'
             }
           ],
@@ -299,14 +397,18 @@ export class LinkedInAnalyzer implements Agent<LinkedInAnalyzerInput, LinkedInAn
 
     // Fallback: Keyword rules
     const ruleOutput = runKeywordRuleFallback(pastedText, 'student');
+    const fallbackUrl = linkedinUrl || 'student://linkedin-text';
+    const evidence = buildLinkedInEvidenceDrafts(ruleOutput, fallbackUrl, 'keyword-rules', input.existingEvidence);
+
     return {
       agent: this.name,
       status: 'done',
       data: ruleOutput,
+      evidence,
       sources: [
         {
           title: 'Student Provided LinkedIn Profile Text (Rule Parser)',
-          url: linkedinUrl || 'student://linkedin-text',
+          url: fallbackUrl,
           trust: 'Verified'
         }
       ],

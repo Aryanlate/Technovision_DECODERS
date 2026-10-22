@@ -122,7 +122,7 @@ export function SuggestionsInbox({
                     {t('components.suggestionsInbox.accept')}
                   </button>
                   <button
-                    onClick={() => onReject(sug.id)}
+                    onClick={() => onReject(sug.evidenceId || sug.id)}
                     className="px-3 py-1.5 bg-white text-[#111111] font-mono text-xs font-bold uppercase tracking-wider border border-[#111111] hover:bg-[#E5E0D4] active:translate-y-0.5 transition-transform"
                     title={t('components.suggestionsInbox.rejectTitle')}
                   >

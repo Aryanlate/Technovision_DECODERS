@@ -6,7 +6,10 @@ import {
   GitHubAnalyzerOutputSchema,
   GITHUB_ANALYZER_SPEC,
   GitHubSuggestedSkill,
-  GitHubSuggestedProject
+  GitHubSuggestedProject,
+  EvidenceRecord,
+  EVIDENCE_KIND,
+  createDraftEvidence
 } from './types.js';
 import { askAgentLLM } from '../llm/index.js';
 
@@ -16,6 +19,7 @@ export interface GitHubAnalyzerInput {
   projects?: any[];
   /** Interface language for AI-written prose ('en' | 'hi' | 'mr'). */
   language?: string;
+  existingEvidence?: EvidenceRecord[];
 }
 
 interface GitHubRepoFact {
@@ -254,6 +258,71 @@ function runRuleBasedFallback(facts: GitHubUserFacts): GitHubAnalyzerOutput {
   };
 }
 
+function buildGitHubEvidenceDrafts(
+  output: GitHubAnalyzerOutput,
+  url: string,
+  providerUsed: string,
+  existingEvidence?: EvidenceRecord[]
+): EvidenceRecord[] {
+  const records: EvidenceRecord[] = [];
+  const subjectId = 'student';
+
+  // Skills
+  for (const item of output.suggestedSkills) {
+    const skill = item.skill;
+    const repos = Array.isArray(item.evidence) ? item.evidence.join(', ') : 'GitHub repository';
+    records.push(
+      createDraftEvidence({
+        subjectType: 'profile',
+        subjectId,
+        kind: EVIDENCE_KIND.GITHUB_DERIVED,
+        key: `skill-${skill.toLowerCase().trim()}`,
+        value: skill,
+        source: {
+          type: 'github_derived',
+          agent: 'GitHubAnalyzer',
+          provider: providerUsed,
+          url,
+          sentence: `Repository evidence: ${repos}`
+        },
+        trust: 'unverified',
+        existingEvidence
+      })
+    );
+  }
+
+  // Projects
+  for (const proj of output.suggestedProjects) {
+    records.push(
+      createDraftEvidence({
+        subjectType: 'profile',
+        subjectId,
+        kind: EVIDENCE_KIND.GITHUB_DERIVED,
+        key: `project-${proj.title.toLowerCase().trim()}`,
+        value: {
+          title: proj.title,
+          domains: [proj.domain || 'Software Engineering'],
+          tech: proj.tech || [],
+          role: 'Developer / Author',
+          status: 'completed',
+          proofLink: proj.proofLink
+        },
+        source: {
+          type: 'github_derived',
+          agent: 'GitHubAnalyzer',
+          provider: providerUsed,
+          url: proj.proofLink || url,
+          sentence: `${proj.domain || 'Software'} project built with ${proj.tech?.join(', ') || 'code'}. Proof: ${proj.proofLink}`
+        },
+        trust: 'unverified',
+        existingEvidence
+      })
+    );
+  }
+
+  return records;
+}
+
 export class GitHubAnalyzer implements Agent<GitHubAnalyzerInput, GitHubAnalyzerOutput> {
   public readonly name = 'GitHubAnalyzer';
 
@@ -315,14 +384,17 @@ export class GitHubAnalyzer implements Agent<GitHubAnalyzerInput, GitHubAnalyzer
 
     // If in demo mode or no URL provided, return benchmark sample with clear note
     if (isDemo || !username) {
+      const url = rawUrl || 'https://github.com/alexsharma';
+      const evidence = buildGitHubEvidenceDrafts(sampleOutput, url, 'offline-cache', input.existingEvidence);
       return {
         agent: this.name,
         status: 'done',
         data: sampleOutput,
+        evidence,
         sources: [
           {
             title: 'Sample GitHub Profile (alexsharma)',
-            url: rawUrl || 'https://github.com/alexsharma',
+            url,
             trust: 'Verified'
           }
         ],
@@ -342,14 +414,17 @@ export class GitHubAnalyzer implements Agent<GitHubAnalyzerInput, GitHubAnalyzer
 
     // If GitHub API failed (e.g. rate limit, user not found, network error)
     if (!facts) {
+      const url = `https://github.com/${username}`;
+      const evidence = buildGitHubEvidenceDrafts(sampleOutput, url, 'fallback-cache', input.existingEvidence);
       return {
         agent: this.name,
         status: 'done',
         data: sampleOutput,
+        evidence,
         sources: [
           {
             title: `GitHub API: ${username}`,
-            url: `https://github.com/${username}`,
+            url,
             trust: 'Needs review'
           }
         ],
@@ -394,14 +469,18 @@ export class GitHubAnalyzer implements Agent<GitHubAnalyzerInput, GitHubAnalyzer
           detectedSkills: llmRes.data.suggestedSkills.map((s) => s.skill)
         };
 
+        const url = `https://github.com/${facts.username}`;
+        const evidence = buildGitHubEvidenceDrafts(enrichedData, url, llmRes.provider, input.existingEvidence);
+
         return {
           agent: this.name,
           status: 'done',
           data: enrichedData,
+          evidence,
           sources: [
             {
               title: `GitHub Profile: ${facts.username} (${facts.repos.length} Repositories)`,
-              url: `https://github.com/${facts.username}`,
+              url,
               trust: 'Verified'
             }
           ],
@@ -419,14 +498,18 @@ export class GitHubAnalyzer implements Agent<GitHubAnalyzerInput, GitHubAnalyzer
 
     // 4. Rule-based fallback mapping languages and topics to skills
     const ruleOutput = runRuleBasedFallback(facts);
+    const fallbackUrl = `https://github.com/${facts.username}`;
+    const evidence = buildGitHubEvidenceDrafts(ruleOutput, fallbackUrl, 'rule-mapper', input.existingEvidence);
+
     return {
       agent: this.name,
       status: 'done',
       data: ruleOutput,
+      evidence,
       sources: [
         {
           title: `GitHub Profile: ${facts.username} (Rule Mapping)`,
-          url: `https://github.com/${facts.username}`,
+          url: fallbackUrl,
           trust: 'Verified'
         }
       ],

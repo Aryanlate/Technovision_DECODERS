@@ -292,7 +292,8 @@ const RunAgentsRequestSchema = z.object({
   agentFilter: z.array(z.string()).optional(),
   stream: z.boolean().optional(),
   /** Interface language for AI-written prose ('en' | 'hi' | 'mr'). */
-  language: z.string().optional()
+  language: z.string().optional(),
+  existingEvidence: z.array(z.any()).optional()
 });
 
 app.post('/api/agents/run', async (req, res) => {
@@ -344,7 +345,7 @@ app.post('/api/agents/run', async (req, res) => {
     });
   }
 
-  const { opportunityText, profile, linkedInText, agentFilter, stream, language } = validation.data;
+  const { opportunityText, profile, linkedInText, agentFilter, stream, language, existingEvidence } = validation.data;
   const effectiveProfile = {
     ...profile,
     linkedInText: linkedInText || profile?.linkedInText
@@ -357,7 +358,7 @@ app.post('/api/agents/run', async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const result = await orchestrator.run({ opportunityText, profile: effectiveProfile, agentFilter, language }, (event) => {
+    const result = await orchestrator.run({ opportunityText, profile: effectiveProfile, agentFilter, language, existingEvidence }, (event) => {
       res.write(`data: ${JSON.stringify({ type: 'progress', event })}\n\n`);
     });
 
@@ -368,7 +369,7 @@ app.post('/api/agents/run', async (req, res) => {
 
   // Standard JSON response mode
   try {
-    const result = await orchestrator.run({ opportunityText, profile: effectiveProfile, agentFilter, language });
+    const result = await orchestrator.run({ opportunityText, profile: effectiveProfile, agentFilter, language, existingEvidence });
     res.json({
       success: true,
       user: authUser ? { id: authUser.id, email: authUser.email } : null,

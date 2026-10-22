@@ -78,8 +78,14 @@ export declare const EvidenceRecordSchema: z.ZodObject<{
     opId: z.ZodString;
     syncState: z.ZodEnum<["local_only", "pending", "synced", "conflict"]>;
 }, "strip", z.ZodTypeAny, {
-    status: "rejected" | "active" | "superseded" | "conflicted";
+    status: "active" | "superseded" | "rejected" | "conflicted";
+    evidenceId: string;
+    subjectType: "profile" | "opportunity";
+    subjectId: string;
     kind: string;
+    key: string;
+    origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+    trust: "verified" | "needs_review" | "unverified";
     source: {
         type: string;
         url?: string | undefined;
@@ -87,26 +93,26 @@ export declare const EvidenceRecordSchema: z.ZodObject<{
         provider?: string | undefined;
         sentence?: string | undefined;
     };
-    trust: "verified" | "needs_review" | "unverified";
-    evidenceId: string;
-    subjectType: "profile" | "opportunity";
-    subjectId: string;
-    key: string;
-    origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
     createdAt: string;
     observedAt: string;
     version: number;
     deviceId: string;
     opId: string;
-    syncState: "pending" | "local_only" | "synced" | "conflict";
+    syncState: "local_only" | "pending" | "synced" | "conflict";
     value?: unknown;
     validUntil?: string | undefined;
     previousVersion?: number | undefined;
     linkedRef?: string | undefined;
     serverSeq?: number | undefined;
 }, {
-    status: "rejected" | "active" | "superseded" | "conflicted";
+    status: "active" | "superseded" | "rejected" | "conflicted";
+    evidenceId: string;
+    subjectType: "profile" | "opportunity";
+    subjectId: string;
     kind: string;
+    key: string;
+    origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+    trust: "verified" | "needs_review" | "unverified";
     source: {
         type: string;
         url?: string | undefined;
@@ -114,18 +120,12 @@ export declare const EvidenceRecordSchema: z.ZodObject<{
         provider?: string | undefined;
         sentence?: string | undefined;
     };
-    trust: "verified" | "needs_review" | "unverified";
-    evidenceId: string;
-    subjectType: "profile" | "opportunity";
-    subjectId: string;
-    key: string;
-    origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
     createdAt: string;
     observedAt: string;
     version: number;
     deviceId: string;
     opId: string;
-    syncState: "pending" | "local_only" | "synced" | "conflict";
+    syncState: "local_only" | "pending" | "synced" | "conflict";
     value?: unknown;
     validUntil?: string | undefined;
     previousVersion?: number | undefined;

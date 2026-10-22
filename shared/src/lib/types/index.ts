@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EvidenceRecordSchema, type EvidenceRecord } from '../../evidence/types.js';
 
 // ============================================================================
 // 1. Requirement Status & Categories
@@ -283,7 +284,8 @@ export const AgentResultSchema = z.object({
   confidence: z.enum(['high', 'medium', 'low']),
   providerUsed: z.string(),
   timeTakenMs: z.number().optional(),
-  error: z.string().optional()
+  error: z.string().optional(),
+  evidence: z.array(EvidenceRecordSchema).optional()
 });
 export type AgentResult<T = any> = {
   agent: string;
@@ -295,6 +297,7 @@ export type AgentResult<T = any> = {
   providerUsed: string;
   timeTakenMs?: number;
   error?: string;
+  evidence?: EvidenceRecord[];
 };
 
 export const AgentProgressEventSchema = z.object({
@@ -309,6 +312,7 @@ export type AgentProgressEvent = z.infer<typeof AgentProgressEventSchema>;
 
 export const AgentSuggestionSchema = z.object({
   id: z.string(),
+  evidenceId: z.string().optional(),
   agent: z.string(),
   type: z.enum(['skill', 'project', 'link', 'document', 'info']),
   title: z.string(),
@@ -316,7 +320,8 @@ export const AgentSuggestionSchema = z.object({
   value: z.any(),
   confidence: z.enum(['high', 'medium', 'low']),
   sources: z.array(AgentSourceSchema),
-  status: z.enum(['pending', 'accepted', 'rejected'])
+  status: z.enum(['pending', 'accepted', 'rejected']),
+  evidenceRecord: EvidenceRecordSchema.optional()
 });
 export type AgentSuggestion = z.infer<typeof AgentSuggestionSchema>;
 
@@ -326,6 +331,7 @@ export interface OrchestratorRunInput {
   agentFilter?: string[];
   /** Interface language for AI-written prose ('en' | 'hi' | 'mr'). */
   language?: string;
+  existingEvidence?: EvidenceRecord[];
 }
 
 export interface OrchestratorRunOutput {
@@ -334,6 +340,8 @@ export interface OrchestratorRunOutput {
   results: Record<string, AgentResult>;
   events: AgentProgressEvent[];
   suggestions: AgentSuggestion[];
+  evidence?: EvidenceRecord[];
   totalTimeMs: number;
 }
+
 

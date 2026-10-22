@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { type EvidenceRecord } from '../../evidence/types.js';
 export declare const RequirementStatusSchema: z.ZodEnum<["Match", "Mismatch", "Missing info"]>;
 export type RequirementStatus = z.infer<typeof RequirementStatusSchema>;
 export declare const RequirementCategorySchema: z.ZodEnum<["education", "academic", "skills", "documents", "links", "availability", "experience", "general"]>;
@@ -49,17 +50,17 @@ export declare const DocumentItemSchema: z.ZodObject<{
     issuedDate: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     type: string;
-    name: string;
     verified: boolean;
-    id?: string | undefined;
+    name: string;
     url?: string | undefined;
+    id?: string | undefined;
     issuedDate?: string | undefined;
 }, {
     type: string;
     name: string;
-    id?: string | undefined;
-    url?: string | undefined;
     verified?: boolean | undefined;
+    url?: string | undefined;
+    id?: string | undefined;
     issuedDate?: string | undefined;
 }>;
 export type DocumentItem = z.infer<typeof DocumentItemSchema>;
@@ -99,17 +100,17 @@ export declare const StudentProfileSchema: z.ZodObject<{
         issuedDate: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         type: string;
-        name: string;
         verified: boolean;
-        id?: string | undefined;
+        name: string;
         url?: string | undefined;
+        id?: string | undefined;
         issuedDate?: string | undefined;
     }, {
         type: string;
         name: string;
-        id?: string | undefined;
-        url?: string | undefined;
         verified?: boolean | undefined;
+        url?: string | undefined;
+        id?: string | undefined;
         issuedDate?: string | undefined;
     }>, "many">>>;
     availabilityWeeks: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
@@ -177,10 +178,10 @@ export declare const StudentProfileSchema: z.ZodObject<{
     skills: string[];
     documents: {
         type: string;
-        name: string;
         verified: boolean;
-        id?: string | undefined;
+        name: string;
         url?: string | undefined;
+        id?: string | undefined;
         issuedDate?: string | undefined;
     }[];
     links: {
@@ -222,9 +223,9 @@ export declare const StudentProfileSchema: z.ZodObject<{
     documents?: {
         type: string;
         name: string;
-        id?: string | undefined;
-        url?: string | undefined;
         verified?: boolean | undefined;
+        url?: string | undefined;
+        id?: string | undefined;
         issuedDate?: string | undefined;
     }[] | undefined;
     links?: {
@@ -352,8 +353,8 @@ export declare const RequirementSchema: z.ZodObject<{
     }>>;
     importance: z.ZodOptional<z.ZodEnum<["mandatory", "preferred"]>>;
 }, "strip", z.ZodTypeAny, {
-    id: string;
     kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+    id: string;
     label: string;
     required: boolean;
     value?: any;
@@ -379,8 +380,8 @@ export declare const RequirementSchema: z.ZodObject<{
     id: string;
     label: string;
     value?: any;
-    title?: string | undefined;
     kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+    title?: string | undefined;
     required?: boolean | undefined;
     sourceSentence?: string | undefined;
     category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
@@ -453,8 +454,8 @@ export declare const ChecklistSchema: z.ZodObject<{
         }>>;
         importance: z.ZodOptional<z.ZodEnum<["mandatory", "preferred"]>>;
     }, "strip", z.ZodTypeAny, {
-        id: string;
         kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+        id: string;
         label: string;
         required: boolean;
         value?: any;
@@ -480,8 +481,8 @@ export declare const ChecklistSchema: z.ZodObject<{
         id: string;
         label: string;
         value?: any;
-        title?: string | undefined;
         kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+        title?: string | undefined;
         required?: boolean | undefined;
         sourceSentence?: string | undefined;
         category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
@@ -507,8 +508,8 @@ export declare const ChecklistSchema: z.ZodObject<{
     title: string;
     opportunityType: string;
     requirements: {
-        id: string;
         kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+        id: string;
         label: string;
         required: boolean;
         value?: any;
@@ -539,8 +540,8 @@ export declare const ChecklistSchema: z.ZodObject<{
         id: string;
         label: string;
         value?: any;
-        title?: string | undefined;
         kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+        title?: string | undefined;
         required?: boolean | undefined;
         sourceSentence?: string | undefined;
         category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
@@ -815,20 +816,20 @@ export declare const AgentEvidenceSchema: z.ZodObject<{
     extractedField: z.ZodOptional<z.ZodString>;
     extractedValue: z.ZodOptional<z.ZodAny>;
 }, "strip", z.ZodTypeAny, {
+    source: string;
     id: string;
     agentId: string;
     agentRole: string;
-    source: string;
     finding: string;
     confidence: number;
     studentConfirmed: boolean;
     extractedField?: string | undefined;
     extractedValue?: any;
 }, {
+    source: string;
     id: string;
     agentId: string;
     agentRole: string;
-    source: string;
     finding: string;
     confidence: number;
     studentConfirmed?: boolean | undefined;
@@ -908,20 +909,20 @@ export declare const EvaluationResultSchema: z.ZodObject<{
         extractedField: z.ZodOptional<z.ZodString>;
         extractedValue: z.ZodOptional<z.ZodAny>;
     }, "strip", z.ZodTypeAny, {
+        source: string;
         id: string;
         agentId: string;
         agentRole: string;
-        source: string;
         finding: string;
         confidence: number;
         studentConfirmed: boolean;
         extractedField?: string | undefined;
         extractedValue?: any;
     }, {
+        source: string;
         id: string;
         agentId: string;
         agentRole: string;
-        source: string;
         finding: string;
         confidence: number;
         studentConfirmed?: boolean | undefined;
@@ -953,10 +954,10 @@ export declare const EvaluationResultSchema: z.ZodObject<{
     rawOpportunityText: string;
     timestamp: string;
     agentEvidence: {
+        source: string;
         id: string;
         agentId: string;
         agentRole: string;
-        source: string;
         finding: string;
         confidence: number;
         studentConfirmed: boolean;
@@ -990,10 +991,10 @@ export declare const EvaluationResultSchema: z.ZodObject<{
     timestamp: string;
     opportunityId?: string | undefined;
     agentEvidence?: {
+        source: string;
         id: string;
         agentId: string;
         agentRole: string;
-        source: string;
         finding: string;
         confidence: number;
         studentConfirmed?: boolean | undefined;
@@ -1009,14 +1010,14 @@ export declare const AgentSourceSchema: z.ZodObject<{
     trust: z.ZodEnum<["Verified", "Needs review", "Unverified"]>;
     reasons: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
 }, "strip", z.ZodTypeAny, {
-    title: string;
     url: string;
     trust: "Verified" | "Needs review" | "Unverified";
+    title: string;
     reasons?: string[] | undefined;
 }, {
-    title: string;
     url: string;
     trust: "Verified" | "Needs review" | "Unverified";
+    title: string;
     reasons?: string[] | undefined;
 }>;
 export type AgentSource = z.infer<typeof AgentSourceSchema>;
@@ -1031,14 +1032,14 @@ export declare const AgentResultSchema: z.ZodObject<{
         trust: z.ZodEnum<["Verified", "Needs review", "Unverified"]>;
         reasons: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         url: string;
         trust: "Verified" | "Needs review" | "Unverified";
+        title: string;
         reasons?: string[] | undefined;
     }, {
-        title: string;
         url: string;
         trust: "Verified" | "Needs review" | "Unverified";
+        title: string;
         reasons?: string[] | undefined;
     }>, "many">;
     notes: z.ZodArray<z.ZodString, "many">;
@@ -1046,36 +1047,186 @@ export declare const AgentResultSchema: z.ZodObject<{
     providerUsed: z.ZodString;
     timeTakenMs: z.ZodOptional<z.ZodNumber>;
     error: z.ZodOptional<z.ZodString>;
+    evidence: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        evidenceId: z.ZodString;
+        subjectType: z.ZodEnum<["profile", "opportunity"]>;
+        subjectId: z.ZodString;
+        kind: z.ZodString;
+        key: z.ZodString;
+        value: z.ZodUnknown;
+        origin: z.ZodEnum<["student_confirmed", "user_provided", "ai_generated", "system_import"]>;
+        trust: z.ZodEnum<["verified", "needs_review", "unverified"]>;
+        source: z.ZodObject<{
+            type: z.ZodString;
+            url: z.ZodOptional<z.ZodString>;
+            agent: z.ZodOptional<z.ZodString>;
+            provider: z.ZodOptional<z.ZodString>;
+            sentence: z.ZodOptional<z.ZodString>;
+        }, "strip", z.ZodTypeAny, {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        }, {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        }>;
+        createdAt: z.ZodString;
+        observedAt: z.ZodString;
+        validUntil: z.ZodOptional<z.ZodString>;
+        status: z.ZodEnum<["active", "superseded", "rejected", "conflicted"]>;
+        version: z.ZodNumber;
+        previousVersion: z.ZodOptional<z.ZodNumber>;
+        linkedRef: z.ZodOptional<z.ZodString>;
+        deviceId: z.ZodString;
+        serverSeq: z.ZodOptional<z.ZodNumber>;
+        opId: z.ZodString;
+        syncState: z.ZodEnum<["local_only", "pending", "synced", "conflict"]>;
+    }, "strip", z.ZodTypeAny, {
+        status: "active" | "superseded" | "rejected" | "conflicted";
+        evidenceId: string;
+        subjectType: "profile" | "opportunity";
+        subjectId: string;
+        kind: string;
+        key: string;
+        origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+        trust: "verified" | "needs_review" | "unverified";
+        source: {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        };
+        createdAt: string;
+        observedAt: string;
+        version: number;
+        deviceId: string;
+        opId: string;
+        syncState: "local_only" | "pending" | "synced" | "conflict";
+        value?: unknown;
+        validUntil?: string | undefined;
+        previousVersion?: number | undefined;
+        linkedRef?: string | undefined;
+        serverSeq?: number | undefined;
+    }, {
+        status: "active" | "superseded" | "rejected" | "conflicted";
+        evidenceId: string;
+        subjectType: "profile" | "opportunity";
+        subjectId: string;
+        kind: string;
+        key: string;
+        origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+        trust: "verified" | "needs_review" | "unverified";
+        source: {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        };
+        createdAt: string;
+        observedAt: string;
+        version: number;
+        deviceId: string;
+        opId: string;
+        syncState: "local_only" | "pending" | "synced" | "conflict";
+        value?: unknown;
+        validUntil?: string | undefined;
+        previousVersion?: number | undefined;
+        linkedRef?: string | undefined;
+        serverSeq?: number | undefined;
+    }>, "many">>;
 }, "strip", z.ZodTypeAny, {
     status: "done" | "failed";
+    agent: string;
     sources: {
-        title: string;
         url: string;
         trust: "Verified" | "Needs review" | "Unverified";
+        title: string;
         reasons?: string[] | undefined;
     }[];
     confidence: "high" | "medium" | "low";
-    agent: string;
     notes: string[];
     providerUsed: string;
     data?: any;
     timeTakenMs?: number | undefined;
     error?: string | undefined;
+    evidence?: {
+        status: "active" | "superseded" | "rejected" | "conflicted";
+        evidenceId: string;
+        subjectType: "profile" | "opportunity";
+        subjectId: string;
+        kind: string;
+        key: string;
+        origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+        trust: "verified" | "needs_review" | "unverified";
+        source: {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        };
+        createdAt: string;
+        observedAt: string;
+        version: number;
+        deviceId: string;
+        opId: string;
+        syncState: "local_only" | "pending" | "synced" | "conflict";
+        value?: unknown;
+        validUntil?: string | undefined;
+        previousVersion?: number | undefined;
+        linkedRef?: string | undefined;
+        serverSeq?: number | undefined;
+    }[] | undefined;
 }, {
     status: "done" | "failed";
+    agent: string;
     sources: {
-        title: string;
         url: string;
         trust: "Verified" | "Needs review" | "Unverified";
+        title: string;
         reasons?: string[] | undefined;
     }[];
     confidence: "high" | "medium" | "low";
-    agent: string;
     notes: string[];
     providerUsed: string;
     data?: any;
     timeTakenMs?: number | undefined;
     error?: string | undefined;
+    evidence?: {
+        status: "active" | "superseded" | "rejected" | "conflicted";
+        evidenceId: string;
+        subjectType: "profile" | "opportunity";
+        subjectId: string;
+        kind: string;
+        key: string;
+        origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+        trust: "verified" | "needs_review" | "unverified";
+        source: {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        };
+        createdAt: string;
+        observedAt: string;
+        version: number;
+        deviceId: string;
+        opId: string;
+        syncState: "local_only" | "pending" | "synced" | "conflict";
+        value?: unknown;
+        validUntil?: string | undefined;
+        previousVersion?: number | undefined;
+        linkedRef?: string | undefined;
+        serverSeq?: number | undefined;
+    }[] | undefined;
 }>;
 export type AgentResult<T = any> = {
     agent: string;
@@ -1087,6 +1238,7 @@ export type AgentResult<T = any> = {
     providerUsed: string;
     timeTakenMs?: number;
     error?: string;
+    evidence?: EvidenceRecord[];
 };
 export declare const AgentProgressEventSchema: z.ZodObject<{
     agent: z.ZodString;
@@ -1113,6 +1265,7 @@ export declare const AgentProgressEventSchema: z.ZodObject<{
 export type AgentProgressEvent = z.infer<typeof AgentProgressEventSchema>;
 export declare const AgentSuggestionSchema: z.ZodObject<{
     id: z.ZodString;
+    evidenceId: z.ZodOptional<z.ZodString>;
     agent: z.ZodString;
     type: z.ZodEnum<["skill", "project", "link", "document", "info"]>;
     title: z.ZodString;
@@ -1125,47 +1278,199 @@ export declare const AgentSuggestionSchema: z.ZodObject<{
         trust: z.ZodEnum<["Verified", "Needs review", "Unverified"]>;
         reasons: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         url: string;
         trust: "Verified" | "Needs review" | "Unverified";
+        title: string;
         reasons?: string[] | undefined;
     }, {
-        title: string;
         url: string;
         trust: "Verified" | "Needs review" | "Unverified";
+        title: string;
         reasons?: string[] | undefined;
     }>, "many">;
     status: z.ZodEnum<["pending", "accepted", "rejected"]>;
+    evidenceRecord: z.ZodOptional<z.ZodObject<{
+        evidenceId: z.ZodString;
+        subjectType: z.ZodEnum<["profile", "opportunity"]>;
+        subjectId: z.ZodString;
+        kind: z.ZodString;
+        key: z.ZodString;
+        value: z.ZodUnknown;
+        origin: z.ZodEnum<["student_confirmed", "user_provided", "ai_generated", "system_import"]>;
+        trust: z.ZodEnum<["verified", "needs_review", "unverified"]>;
+        source: z.ZodObject<{
+            type: z.ZodString;
+            url: z.ZodOptional<z.ZodString>;
+            agent: z.ZodOptional<z.ZodString>;
+            provider: z.ZodOptional<z.ZodString>;
+            sentence: z.ZodOptional<z.ZodString>;
+        }, "strip", z.ZodTypeAny, {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        }, {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        }>;
+        createdAt: z.ZodString;
+        observedAt: z.ZodString;
+        validUntil: z.ZodOptional<z.ZodString>;
+        status: z.ZodEnum<["active", "superseded", "rejected", "conflicted"]>;
+        version: z.ZodNumber;
+        previousVersion: z.ZodOptional<z.ZodNumber>;
+        linkedRef: z.ZodOptional<z.ZodString>;
+        deviceId: z.ZodString;
+        serverSeq: z.ZodOptional<z.ZodNumber>;
+        opId: z.ZodString;
+        syncState: z.ZodEnum<["local_only", "pending", "synced", "conflict"]>;
+    }, "strip", z.ZodTypeAny, {
+        status: "active" | "superseded" | "rejected" | "conflicted";
+        evidenceId: string;
+        subjectType: "profile" | "opportunity";
+        subjectId: string;
+        kind: string;
+        key: string;
+        origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+        trust: "verified" | "needs_review" | "unverified";
+        source: {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        };
+        createdAt: string;
+        observedAt: string;
+        version: number;
+        deviceId: string;
+        opId: string;
+        syncState: "local_only" | "pending" | "synced" | "conflict";
+        value?: unknown;
+        validUntil?: string | undefined;
+        previousVersion?: number | undefined;
+        linkedRef?: string | undefined;
+        serverSeq?: number | undefined;
+    }, {
+        status: "active" | "superseded" | "rejected" | "conflicted";
+        evidenceId: string;
+        subjectType: "profile" | "opportunity";
+        subjectId: string;
+        kind: string;
+        key: string;
+        origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+        trust: "verified" | "needs_review" | "unverified";
+        source: {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        };
+        createdAt: string;
+        observedAt: string;
+        version: number;
+        deviceId: string;
+        opId: string;
+        syncState: "local_only" | "pending" | "synced" | "conflict";
+        value?: unknown;
+        validUntil?: string | undefined;
+        previousVersion?: number | undefined;
+        linkedRef?: string | undefined;
+        serverSeq?: number | undefined;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     type: "link" | "document" | "skill" | "project" | "info";
-    status: "pending" | "accepted" | "rejected";
+    status: "rejected" | "pending" | "accepted";
+    agent: string;
     id: string;
     title: string;
     description: string;
     sources: {
-        title: string;
         url: string;
         trust: "Verified" | "Needs review" | "Unverified";
+        title: string;
         reasons?: string[] | undefined;
     }[];
     confidence: "high" | "medium" | "low";
-    agent: string;
     value?: any;
+    evidenceId?: string | undefined;
+    evidenceRecord?: {
+        status: "active" | "superseded" | "rejected" | "conflicted";
+        evidenceId: string;
+        subjectType: "profile" | "opportunity";
+        subjectId: string;
+        kind: string;
+        key: string;
+        origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+        trust: "verified" | "needs_review" | "unverified";
+        source: {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        };
+        createdAt: string;
+        observedAt: string;
+        version: number;
+        deviceId: string;
+        opId: string;
+        syncState: "local_only" | "pending" | "synced" | "conflict";
+        value?: unknown;
+        validUntil?: string | undefined;
+        previousVersion?: number | undefined;
+        linkedRef?: string | undefined;
+        serverSeq?: number | undefined;
+    } | undefined;
 }, {
     type: "link" | "document" | "skill" | "project" | "info";
-    status: "pending" | "accepted" | "rejected";
+    status: "rejected" | "pending" | "accepted";
+    agent: string;
     id: string;
     title: string;
     description: string;
     sources: {
-        title: string;
         url: string;
         trust: "Verified" | "Needs review" | "Unverified";
+        title: string;
         reasons?: string[] | undefined;
     }[];
     confidence: "high" | "medium" | "low";
-    agent: string;
     value?: any;
+    evidenceId?: string | undefined;
+    evidenceRecord?: {
+        status: "active" | "superseded" | "rejected" | "conflicted";
+        evidenceId: string;
+        subjectType: "profile" | "opportunity";
+        subjectId: string;
+        kind: string;
+        key: string;
+        origin: "student_confirmed" | "user_provided" | "ai_generated" | "system_import";
+        trust: "verified" | "needs_review" | "unverified";
+        source: {
+            type: string;
+            url?: string | undefined;
+            agent?: string | undefined;
+            provider?: string | undefined;
+            sentence?: string | undefined;
+        };
+        createdAt: string;
+        observedAt: string;
+        version: number;
+        deviceId: string;
+        opId: string;
+        syncState: "local_only" | "pending" | "synced" | "conflict";
+        value?: unknown;
+        validUntil?: string | undefined;
+        previousVersion?: number | undefined;
+        linkedRef?: string | undefined;
+        serverSeq?: number | undefined;
+    } | undefined;
 }>;
 export type AgentSuggestion = z.infer<typeof AgentSuggestionSchema>;
 export interface OrchestratorRunInput {
@@ -1174,6 +1479,7 @@ export interface OrchestratorRunInput {
     agentFilter?: string[];
     /** Interface language for AI-written prose ('en' | 'hi' | 'mr'). */
     language?: string;
+    existingEvidence?: EvidenceRecord[];
 }
 export interface OrchestratorRunOutput {
     orchestrationId: string;
@@ -1181,6 +1487,7 @@ export interface OrchestratorRunOutput {
     results: Record<string, AgentResult>;
     events: AgentProgressEvent[];
     suggestions: AgentSuggestion[];
+    evidence?: EvidenceRecord[];
     totalTimeMs: number;
 }
 //# sourceMappingURL=index.d.ts.map

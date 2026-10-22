@@ -8,7 +8,10 @@ import {
   RESEARCH_AGENT_SPEC,
   Requirement,
   ResearchedRequirement,
-  parseOpportunityToChecklist
+  parseOpportunityToChecklist,
+  EvidenceRecord,
+  EVIDENCE_KIND,
+  createDraftEvidence
 } from './types.js';
 import { askAgentLLM } from '../llm/index.js';
 
@@ -20,6 +23,7 @@ export interface ResearchAgentInput {
   checklist?: Checklist;
   /** Interface language for AI-written prose ('en' | 'hi' | 'mr'). */
   language?: string;
+  existingEvidence?: EvidenceRecord[];
 }
 
 /**
@@ -114,19 +118,48 @@ export class ResearchAgent implements Agent<ResearchAgentInput, ResearchAgentOut
     };
   }
 
+  private buildEvidenceDrafts(
+    extraRequirements: ResearchedRequirement[],
+    subjectId: string,
+    providerUsed: string,
+    existingEvidence?: EvidenceRecord[]
+  ): EvidenceRecord[] {
+    return extraRequirements.map((req) =>
+      createDraftEvidence({
+        subjectType: 'opportunity',
+        subjectId: subjectId || 'opportunity',
+        kind: EVIDENCE_KIND.RESEARCHED_FACT,
+        key: req.id,
+        value: req,
+        source: {
+          type: 'research_agent',
+          agent: this.name,
+          provider: providerUsed,
+          url: req.sourceUrl,
+          sentence: req.sourceSentence || req.label || req.title
+        },
+        trust: 'unverified',
+        existingEvidence
+      })
+    );
+  }
+
   async run(input: ResearchAgentInput): Promise<AgentResult<ResearchAgentOutput>> {
     const startTime = Date.now();
     const isDemo = process.env.DEMO_MODE === 'true';
+    const oppSubjectId = input.opportunityTitle || input.organizationName || 'opportunity';
 
     // ----------------------------------------------------------------------
     // DEMO_MODE: cached result, no network.
     // ----------------------------------------------------------------------
     if (isDemo) {
       const data = this.cachedDemoResult();
+      const evidence = this.buildEvidenceDrafts(data.extraRequirements, oppSubjectId, 'cache', input.existingEvidence);
       return {
         agent: this.name,
         status: 'done',
         data,
+        evidence,
         sources: toSources(data.extraRequirements),
         notes: ['DEMO_MODE active: returning cached grounded research.'],
         confidence: 'high',
@@ -159,6 +192,7 @@ export class ResearchAgent implements Agent<ResearchAgentInput, ResearchAgentOut
           extraRequirements: [],
           notes: ['Pasted text already covers deadline, eligibility and documents; no web research needed.']
         },
+        evidence: [],
         sources: [],
         notes: ['No missing details detected; skipped live web search.'],
         confidence: 'high',
@@ -190,10 +224,12 @@ export class ResearchAgent implements Agent<ResearchAgentInput, ResearchAgentOut
     const researched = llmRes?.data?.extraRequirements?.filter((r) => (r.sourceUrl || '').trim()) ?? [];
     if (!llmRes || !llmRes.data || researched.length === 0) {
       const data = this.cachedDemoResult();
+      const evidence = this.buildEvidenceDrafts(data.extraRequirements, oppSubjectId, 'cache', input.existingEvidence);
       return {
         agent: this.name,
         status: 'done',
         data,
+        evidence,
         sources: toSources(data.extraRequirements),
         notes: [
           'Live web search unavailable or free search allowance exhausted: returning cached demo research result.',
@@ -215,10 +251,13 @@ export class ResearchAgent implements Agent<ResearchAgentInput, ResearchAgentOut
       ]
     };
 
+    const evidence = this.buildEvidenceDrafts(researched, oppSubjectId, llmRes.provider, input.existingEvidence);
+
     return {
       agent: this.name,
       status: 'done',
       data,
+      evidence,
       sources: toSources(researched),
       notes: [`Researched ${researched.length} cited fact(s) for missing details: ${missingDetails.join(', ')}.`],
       confidence: 'medium',

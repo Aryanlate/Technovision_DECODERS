@@ -40,13 +40,13 @@ export declare const TrackerItemSchema: z.ZodObject<{
     nextSteps: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
 }, "strip", z.ZodTypeAny, {
     status: "Interested" | "Preparing" | "Applied" | "Interview" | "Result";
+    source: string;
+    createdAt: string;
     id: string;
     title: string;
     deadline: string | null;
     nextSteps: string[];
-    source: string;
     notes: string;
-    createdAt: string;
     sourceUrl: string;
     readinessScore: number;
     readinessLabel: string;
@@ -58,12 +58,13 @@ export declare const TrackerItemSchema: z.ZodObject<{
         total?: number | undefined;
     } | undefined;
 }, {
+    createdAt: string;
     id: string;
     title: string;
-    createdAt: string;
     readinessScore: number;
     updatedAt: string;
     status?: "Interested" | "Preparing" | "Applied" | "Interview" | "Result" | undefined;
+    source?: string | undefined;
     deadline?: string | null | undefined;
     counts?: {
         matches?: number | undefined;
@@ -72,7 +73,6 @@ export declare const TrackerItemSchema: z.ZodObject<{
         total?: number | undefined;
     } | undefined;
     nextSteps?: string[] | undefined;
-    source?: string | undefined;
     notes?: string | undefined;
     sourceUrl?: string | undefined;
     readinessLabel?: string | undefined;

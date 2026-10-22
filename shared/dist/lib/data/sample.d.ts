@@ -39,8 +39,8 @@ export declare const SAMPLE_OPPORTUNITIES: {
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -70,10 +70,10 @@ export declare const SAMPLE_OPPORTUNITIES: {
         skills: string[];
         documents: {
             type: string;
-            name: string;
             verified: boolean;
-            id?: string | undefined;
+            name: string;
             url?: string | undefined;
+            id?: string | undefined;
             issuedDate?: string | undefined;
         }[];
         links: {
@@ -120,8 +120,8 @@ export declare const ADDITIONAL_SAMPLES: {
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -151,10 +151,10 @@ export declare const ADDITIONAL_SAMPLES: {
         skills: string[];
         documents: {
             type: string;
-            name: string;
             verified: boolean;
-            id?: string | undefined;
+            name: string;
             url?: string | undefined;
+            id?: string | undefined;
             issuedDate?: string | undefined;
         }[];
         links: {
@@ -199,10 +199,10 @@ export declare const sampleProfile: {
     skills: string[];
     documents: {
         type: string;
-        name: string;
         verified: boolean;
-        id?: string | undefined;
+        name: string;
         url?: string | undefined;
+        id?: string | undefined;
         issuedDate?: string | undefined;
     }[];
     links: {
@@ -244,10 +244,10 @@ export declare const sampleStudentProfile: {
     skills: string[];
     documents: {
         type: string;
-        name: string;
         verified: boolean;
-        id?: string | undefined;
+        name: string;
         url?: string | undefined;
+        id?: string | undefined;
         issuedDate?: string | undefined;
     }[];
     links: {
@@ -289,8 +289,8 @@ export declare const sampleChecklist: {
     title: string;
     opportunityType: string;
     requirements: {
-        id: string;
         kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+        id: string;
         label: string;
         required: boolean;
         value?: any;
@@ -323,8 +323,8 @@ export declare const scholarshipOpportunity: {
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -354,10 +354,10 @@ export declare const scholarshipOpportunity: {
         skills: string[];
         documents: {
             type: string;
-            name: string;
             verified: boolean;
-            id?: string | undefined;
+            name: string;
             url?: string | undefined;
+            id?: string | undefined;
             issuedDate?: string | undefined;
         }[];
         links: {
@@ -404,8 +404,8 @@ export declare const competitionOpportunity: {
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -435,10 +435,10 @@ export declare const competitionOpportunity: {
         skills: string[];
         documents: {
             type: string;
-            name: string;
             verified: boolean;
-            id?: string | undefined;
+            name: string;
             url?: string | undefined;
+            id?: string | undefined;
             issuedDate?: string | undefined;
         }[];
         links: {
@@ -485,8 +485,8 @@ export declare const iotInternshipOpportunity: {
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -516,10 +516,10 @@ export declare const iotInternshipOpportunity: {
         skills: string[];
         documents: {
             type: string;
-            name: string;
             verified: boolean;
-            id?: string | undefined;
+            name: string;
             url?: string | undefined;
+            id?: string | undefined;
             issuedDate?: string | undefined;
         }[];
         links: {
@@ -566,8 +566,8 @@ export declare const sampleOpportunities: {
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -597,10 +597,10 @@ export declare const sampleOpportunities: {
         skills: string[];
         documents: {
             type: string;
-            name: string;
             verified: boolean;
-            id?: string | undefined;
+            name: string;
             url?: string | undefined;
+            id?: string | undefined;
             issuedDate?: string | undefined;
         }[];
         links: {
@@ -647,8 +647,8 @@ export declare const additionalSamples: {
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -678,10 +678,10 @@ export declare const additionalSamples: {
         skills: string[];
         documents: {
             type: string;
-            name: string;
             verified: boolean;
-            id?: string | undefined;
+            name: string;
             url?: string | undefined;
+            id?: string | undefined;
             issuedDate?: string | undefined;
         }[];
         links: {

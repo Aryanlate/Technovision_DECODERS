@@ -28,7 +28,11 @@ exports.createAdvisoryEvidence = createAdvisoryEvidence;
 exports.fnv1aHash = fnv1aHash;
 exports.contentFields = contentFields;
 exports.contentHash = contentHash;
+exports.deriveEvidenceId = deriveEvidenceId;
+exports.validUntilFromStaleness = validUntilFromStaleness;
+exports.createDraftEvidence = createDraftEvidence;
 const types_js_1 = require("./types.js");
+const staleness_js_1 = require("./staleness.js");
 __exportStar(require("./types.js"), exports);
 __exportStar(require("./staleness.js"), exports);
 // ============================================================================
@@ -279,5 +283,91 @@ function contentFields(record) {
 /** Same fact in two versions (or two devices) hashes to the same value. */
 function contentHash(record) {
     return fnv1aHash(stableStringify(contentFields(record)));
+}
+// ---------------------------------------------------------------------------
+// Draft AI Evidence Helpers
+// ---------------------------------------------------------------------------
+/**
+ * Derives a stable evidenceId from subjectId, kind and key.
+ * Finding the same logical fact again will produce this exact same evidenceId.
+ */
+function deriveEvidenceId(subjectId, kind, key) {
+    const sanitize = (val) => String(val).toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+    return `ev-${sanitize(subjectId)}-${sanitize(kind)}-${sanitize(key)}`;
+}
+/**
+ * Calculates validUntil ISO timestamp from the staleness limit for a kind.
+ */
+function validUntilFromStaleness(kind, observedAt = new Date()) {
+    const days = (0, staleness_js_1.staleAfterDays)(kind);
+    if (days === null)
+        return undefined;
+    return new Date(observedAt.getTime() + days * 86_400_000).toISOString();
+}
+/**
+ * Creates an EvidenceRecord draft for AI-gathered facts.
+ * - origin is always 'ai_generated' (an agent must never write student_confirmed).
+ * - trust comes from the Verifier (default 'unverified').
+ * - validUntil comes from the staleness constants.
+ * - Finding the same logical fact again creates a new version of the same evidenceId
+ *   (derived from subjectId, kind, key) and never creates a duplicate or replaces the old one.
+ */
+function createDraftEvidence(input) {
+    const now = input.now ?? new Date();
+    const observedAt = input.observedAt ?? now.toISOString();
+    const validUntil = input.validUntil ?? validUntilFromStaleness(input.kind, now);
+    const evidenceId = deriveEvidenceId(input.subjectId, input.kind, input.key);
+    const history = input.existingEvidence ? historyOf(evidenceId, input.existingEvidence) : [];
+    if (history.length > 0) {
+        const current = currentVersion(history);
+        // If student already confirmed this fact, an agent must never overwrite it:
+        // it creates an advisory record linked to it
+        if (current.origin === 'student_confirmed') {
+            return createAdvisoryEvidence({
+                subjectType: input.subjectType,
+                subjectId: input.subjectId,
+                kind: input.kind,
+                key: input.key,
+                value: input.value,
+                trust: input.trust ?? 'unverified',
+                source: input.source,
+                observedAt,
+                validUntil,
+                linkedRef: (0, types_js_1.versionRef)(current),
+                deviceId: input.deviceId,
+                opId: input.opId,
+                now
+            });
+        }
+        // Existing AI record (or non-confirmed): append version n+1 of the same evidenceId
+        const revision = reviseEvidence(history, {
+            origin: 'ai_generated',
+            trust: input.trust ?? current.trust ?? 'unverified',
+            value: input.value,
+            source: input.source,
+            observedAt,
+            validUntil,
+            deviceId: input.deviceId,
+            opId: input.opId,
+            now
+        });
+        return revision.record;
+    }
+    return createEvidence({
+        evidenceId,
+        subjectType: input.subjectType,
+        subjectId: input.subjectId,
+        kind: input.kind,
+        key: input.key,
+        value: input.value,
+        origin: 'ai_generated',
+        trust: input.trust ?? 'unverified',
+        source: input.source,
+        observedAt,
+        validUntil,
+        deviceId: input.deviceId,
+        opId: input.opId,
+        now
+    });
 }
 //# sourceMappingURL=index.js.map

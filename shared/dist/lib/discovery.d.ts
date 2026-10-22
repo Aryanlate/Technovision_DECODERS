@@ -77,8 +77,8 @@ export declare const DiscoveryListingCardSchema: z.ZodObject<{
         }>>;
         importance: z.ZodOptional<z.ZodEnum<["mandatory", "preferred"]>>;
     }, "strip", z.ZodTypeAny, {
-        id: string;
         kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+        id: string;
         label: string;
         required: boolean;
         value?: any;
@@ -104,8 +104,8 @@ export declare const DiscoveryListingCardSchema: z.ZodObject<{
         id: string;
         label: string;
         value?: any;
-        title?: string | undefined;
         kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+        title?: string | undefined;
         required?: boolean | undefined;
         sourceSentence?: string | undefined;
         category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
@@ -158,11 +158,12 @@ export declare const DiscoveryListingCardSchema: z.ZodObject<{
     }>, "many">>;
     aiSuggestedCount: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
+    trust: "Verified" | "Needs review" | "Unverified";
     title: string;
     opportunityType: string;
     requirements: {
-        id: string;
         kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+        id: string;
         label: string;
         required: boolean;
         value?: any;
@@ -204,7 +205,6 @@ export declare const DiscoveryListingCardSchema: z.ZodObject<{
     };
     readiness: "Ready to apply" | "Almost ready" | "Not ready yet";
     nextSteps: string[];
-    trust: "Verified" | "Needs review" | "Unverified";
     organisation: string;
     sourceUrl: string;
     fitReason: string;
@@ -213,6 +213,7 @@ export declare const DiscoveryListingCardSchema: z.ZodObject<{
     singleFix: string;
     aiSuggestedCount: number;
 }, {
+    trust: "Verified" | "Needs review" | "Unverified";
     title: string;
     opportunityType: string;
     counts: {
@@ -222,7 +223,6 @@ export declare const DiscoveryListingCardSchema: z.ZodObject<{
         total: number;
     };
     readiness: "Ready to apply" | "Almost ready" | "Not ready yet";
-    trust: "Verified" | "Needs review" | "Unverified";
     organisation: string;
     sourceUrl: string;
     fitReason: string;
@@ -230,8 +230,8 @@ export declare const DiscoveryListingCardSchema: z.ZodObject<{
         id: string;
         label: string;
         value?: any;
-        title?: string | undefined;
         kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+        title?: string | undefined;
         required?: boolean | undefined;
         sourceSentence?: string | undefined;
         category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
@@ -358,8 +358,8 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
             }>>;
             importance: z.ZodOptional<z.ZodEnum<["mandatory", "preferred"]>>;
         }, "strip", z.ZodTypeAny, {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -385,8 +385,8 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
             id: string;
             label: string;
             value?: any;
-            title?: string | undefined;
             kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+            title?: string | undefined;
             required?: boolean | undefined;
             sourceSentence?: string | undefined;
             category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
@@ -439,11 +439,12 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
         }>, "many">>;
         aiSuggestedCount: z.ZodDefault<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
+        trust: "Verified" | "Needs review" | "Unverified";
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -485,7 +486,6 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
         };
         readiness: "Ready to apply" | "Almost ready" | "Not ready yet";
         nextSteps: string[];
-        trust: "Verified" | "Needs review" | "Unverified";
         organisation: string;
         sourceUrl: string;
         fitReason: string;
@@ -494,6 +494,7 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
         singleFix: string;
         aiSuggestedCount: number;
     }, {
+        trust: "Verified" | "Needs review" | "Unverified";
         title: string;
         opportunityType: string;
         counts: {
@@ -503,7 +504,6 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
             total: number;
         };
         readiness: "Ready to apply" | "Almost ready" | "Not ready yet";
-        trust: "Verified" | "Needs review" | "Unverified";
         organisation: string;
         sourceUrl: string;
         fitReason: string;
@@ -511,8 +511,8 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
             id: string;
             label: string;
             value?: any;
-            title?: string | undefined;
             kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+            title?: string | undefined;
             required?: boolean | undefined;
             sourceSentence?: string | undefined;
             category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
@@ -565,11 +565,12 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
     confidence: "high" | "medium" | "low";
     notes: string[];
     listings: {
+        trust: "Verified" | "Needs review" | "Unverified";
         title: string;
         opportunityType: string;
         requirements: {
-            id: string;
             kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+            id: string;
             label: string;
             required: boolean;
             value?: any;
@@ -611,7 +612,6 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
         };
         readiness: "Ready to apply" | "Almost ready" | "Not ready yet";
         nextSteps: string[];
-        trust: "Verified" | "Needs review" | "Unverified";
         organisation: string;
         sourceUrl: string;
         fitReason: string;
@@ -628,6 +628,7 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
     confidence: "high" | "medium" | "low";
     notes: string[];
     listings: {
+        trust: "Verified" | "Needs review" | "Unverified";
         title: string;
         opportunityType: string;
         counts: {
@@ -637,7 +638,6 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
             total: number;
         };
         readiness: "Ready to apply" | "Almost ready" | "Not ready yet";
-        trust: "Verified" | "Needs review" | "Unverified";
         organisation: string;
         sourceUrl: string;
         fitReason: string;
@@ -645,8 +645,8 @@ export declare const DiscoveryResultSchema: z.ZodObject<{
             id: string;
             label: string;
             value?: any;
-            title?: string | undefined;
             kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+            title?: string | undefined;
             required?: boolean | undefined;
             sourceSentence?: string | undefined;
             category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;

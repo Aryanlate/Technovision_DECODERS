@@ -62,8 +62,8 @@ export declare const DriveChecklistSchema: z.ZodObject<{
         }>>;
         importance: z.ZodOptional<z.ZodEnum<["mandatory", "preferred"]>>;
     }, "strip", z.ZodTypeAny, {
-        id: string;
         kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+        id: string;
         label: string;
         required: boolean;
         value?: any;
@@ -89,8 +89,8 @@ export declare const DriveChecklistSchema: z.ZodObject<{
         id: string;
         label: string;
         value?: any;
-        title?: string | undefined;
         kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+        title?: string | undefined;
         required?: boolean | undefined;
         sourceSentence?: string | undefined;
         category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
@@ -111,12 +111,13 @@ export declare const DriveChecklistSchema: z.ZodObject<{
         importance?: "mandatory" | "preferred" | undefined;
     }>, "many">>;
 }, "strip", z.ZodTypeAny, {
+    createdAt: string;
     id: string;
     title: string;
     deadline: string;
     requirements: {
-        id: string;
         kind: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom";
+        id: string;
         label: string;
         required: boolean;
         value?: any;
@@ -140,23 +141,22 @@ export declare const DriveChecklistSchema: z.ZodObject<{
         importance?: "mandatory" | "preferred" | undefined;
     }[];
     notes: string;
-    createdAt: string;
     partnerName: string;
     partnerType: "other" | "company" | "placement-cell";
     location: string;
     applyUrl: string;
 }, {
+    createdAt: string;
     id: string;
     title: string;
-    createdAt: string;
     partnerName: string;
     deadline?: string | undefined;
     requirements?: {
         id: string;
         label: string;
         value?: any;
-        title?: string | undefined;
         kind?: "skills" | "availability" | "link" | "year" | "cgpa" | "document" | "projectCount" | "projectTag" | "deadline" | "custom" | undefined;
+        title?: string | undefined;
         required?: boolean | undefined;
         sourceSentence?: string | undefined;
         category?: "education" | "academic" | "skills" | "documents" | "links" | "availability" | "experience" | "general" | undefined;
