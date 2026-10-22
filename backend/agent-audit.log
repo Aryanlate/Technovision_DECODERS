@@ -37,3 +37,16 @@
 [AGENT_AUDIT 2026-10-22T01:48:00.727Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
 [AGENT_AUDIT 2026-10-22T01:48:00.729Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
 [AGENT_AUDIT 2026-10-22T01:48:00.731Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:39.455Z] Agent=test_timeout | Provider=mock-timeout-p1 | Error=timeout | Duration=0ms | FallbackUsed=false | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:39.457Z] Agent=test_failall | Provider=mock-fail-1 | Error=provider_error | Duration=0ms | FallbackUsed=false | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:39.458Z] Agent=test_failall | Provider=mock-fail-2 | Error=429_rate_limit | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:39.478Z] Agent=github_analyzer | Provider=gemini | Error=all_providers_failed | Duration=1ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:39.482Z] Agent=linkedin_analyzer | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:39.653Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=1ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:39.659Z] Agent=research_agent | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:40.210Z] Agent=test_failall | Provider=mock-fail-2 | Error=429_rate_limit | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:40.211Z] Agent=test_failall | Provider=mock-fail-1 | Error=all_providers_failed | Duration=754ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:40.724Z] Agent=discovery_agent | Provider=gemini | Error=all_providers_failed | Duration=1ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:40.727Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=1ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:40.728Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
+[AGENT_AUDIT 2026-10-22T02:25:40.731Z] Agent=opportunity_reader | Provider=gemini | Error=all_providers_failed | Duration=0ms | FallbackUsed=true | Slow=false | Failed=true
