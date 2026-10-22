@@ -10,4 +10,5 @@ export * from './lib/drive.js';
 export * from './lib/sustainability.js';
 export * from './lib/flags.js';
 export * from './evidence/index.js';
+export * from './evaluator/index.js';
 //# sourceMappingURL=index.d.ts.map

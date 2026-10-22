@@ -46,10 +46,10 @@ export declare const TrackerItemSchema: z.ZodObject<{
     nextSteps: string[];
     source: string;
     notes: string;
+    createdAt: string;
     sourceUrl: string;
     readinessScore: number;
     readinessLabel: string;
-    createdAt: string;
     updatedAt: string;
     counts?: {
         matches: number;
@@ -60,8 +60,8 @@ export declare const TrackerItemSchema: z.ZodObject<{
 }, {
     id: string;
     title: string;
-    readinessScore: number;
     createdAt: string;
+    readinessScore: number;
     updatedAt: string;
     status?: "Interested" | "Preparing" | "Applied" | "Interview" | "Result" | undefined;
     deadline?: string | null | undefined;

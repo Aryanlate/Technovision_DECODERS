@@ -71,10 +71,10 @@ export declare const ShareSnapshotSchema: z.ZodObject<{
     opportunityType: string;
     nextSteps: string[];
     opportunityTitle: string;
+    createdAt: string;
     sourceUrl: string;
     readinessScore: number;
     readinessLabel: string;
-    createdAt: string;
     expiresAt: string;
     revoked: boolean;
     sourceLabel: string;
@@ -94,8 +94,8 @@ export declare const ShareSnapshotSchema: z.ZodObject<{
 }, {
     id: string;
     opportunityTitle: string;
-    readinessScore: number;
     createdAt: string;
+    readinessScore: number;
     expiresAt: string;
     opportunityType?: string | undefined;
     counts?: {
@@ -170,10 +170,10 @@ export declare const PublicShareSnapshotSchema: z.ZodObject<Omit<{
     opportunityType: string;
     nextSteps: string[];
     opportunityTitle: string;
+    createdAt: string;
     sourceUrl: string;
     readinessScore: number;
     readinessLabel: string;
-    createdAt: string;
     expiresAt: string;
     revoked: boolean;
     sourceLabel: string;
@@ -192,8 +192,8 @@ export declare const PublicShareSnapshotSchema: z.ZodObject<Omit<{
 }, {
     id: string;
     opportunityTitle: string;
-    readinessScore: number;
     createdAt: string;
+    readinessScore: number;
     expiresAt: string;
     opportunityType?: string | undefined;
     counts?: {
